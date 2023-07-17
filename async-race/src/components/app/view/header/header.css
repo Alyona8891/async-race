@@ -1,4 +1,19 @@
 .page-header {
     width: 90%;
     margin: 0 auto;
+    padding-top: 20px;
+}
+.page-header__link {
+    padding: 5px;
+    background-color: rgb(69, 165, 165);
+    color: black;
+    cursor: pointer;
+}
+
+.page-header__link:not(:last-child) {
+    margin-right: 10px;
+}
+
+.page-header__link_selected {
+    border: solid 2px white;
 }

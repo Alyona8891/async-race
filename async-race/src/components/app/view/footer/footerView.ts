@@ -3,7 +3,7 @@ import { ParametersElementCreator } from '../../../../types/types';
 // import ElementCreator from '../../../units/elementCreator';
 import View from '../view';
 
-const innerBlockInfo = `
+const INNER_BLOCK_INFO = `
 <div class="page-footer__ghpage-block ghpage-block">
     <a class="ghpage-block__link" href="https://github.com/Alyona8891" target="_blank">Alyona Shupenyova</a>
 </div>
@@ -31,7 +31,7 @@ export default class FooterView extends View {
             createdElement = this.elementCreator.getCreatedElement();
         }
         if (createdElement) {
-            createdElement.innerHTML = innerBlockInfo;
+            createdElement.innerHTML = INNER_BLOCK_INFO;
         }
     }
 }
