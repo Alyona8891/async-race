@@ -1,7 +1,28 @@
-div {
-  width: 200px;
-  height: 200px;
-  background-color: #cf17b1;
-  margin: 5px auto;
+html, body {
+    height: 100%;
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: #2e2a23;
+    color: beige;
+    font-family: "Exo 2", "Lato", "Helvetica Neue", sans-serif;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+*,*:before,*:after {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}

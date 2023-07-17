@@ -1,0 +1,39 @@
+.page-footer {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.rslink-block__logo {
+    display: inline-block;
+    width: 60px;
+    height: 40px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.rslink-block__logo:hover {
+    transition: 0.3s;
+    scale: 1.1;
+}
+
+.logo:active {
+    transition: 0.3s;
+    border: 2px solid rgb(236, 16, 137);
+}
+
+.ghpage-block__link {
+    transition: 0.3s;
+}
+
+.ghpage-block__link:hover {
+    color: rgb(236, 16, 137);
+    transition: 0.3s;
+}
+
+.ghpage-block__link:active {
+    color: rgb(236, 16, 137);
+    transition: 0.3s;
+}
