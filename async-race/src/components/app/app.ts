@@ -8,9 +8,10 @@ export default class App {
     }
 
     static createView(): void {
-        const headerView: HeaderView = new HeaderView();
-        const footerView: FooterView = new FooterView();
         const mainView: MainView = new MainView();
+        const headerView: HeaderView = new HeaderView(mainView);
+
+        const footerView: FooterView = new FooterView();
         const createdHeaderView = headerView.getElementCreator();
         const createdMainView = mainView.getElementCreator();
         const createdFooterView = footerView.getElementCreator();

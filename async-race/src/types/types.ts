@@ -2,7 +2,7 @@ export interface ParametersElementCreator {
     tag: string;
     tagClasses: string[] | null;
     textContent: string;
-    callback: null;
+    callback: null | CallbackObject;
 }
 
 export type CallbackObject = {
@@ -16,3 +16,8 @@ type FunctionType = {
 export type FunctionObject = {
     [key: string]: FunctionType;
 };
+
+export interface PageParameter {
+    name: string;
+    callBack: null | CallbackObject;
+}

@@ -1,15 +1,15 @@
-import { ParametersElementCreator } from '../../../../../types/types';
+import { PageParameter, ParametersElementCreator } from '../../../../../types/types';
 import View from '../../view';
 
 export default class LinkView extends View {
     arrLinkElements: LinkView[];
 
-    constructor(text: string, arrLinkElements: LinkView[]) {
+    constructor(pageParameters: PageParameter, arrLinkElements: LinkView[]) {
         const parameters: ParametersElementCreator = {
             tag: 'a',
             tagClasses: ['page-header__link'],
-            textContent: text,
-            callback: null,
+            textContent: pageParameters.name,
+            callback: pageParameters.callBack,
         };
         super(parameters);
         this.arrLinkElements = arrLinkElements;

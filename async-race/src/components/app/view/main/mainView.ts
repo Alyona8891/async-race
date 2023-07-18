@@ -11,9 +11,14 @@ export default class MainView extends View {
             callback: null,
         };
         super(parameters);
-        // this.configView();
     }
 
-    /* configView(): void {
-    } */
+    redrawContent(view: View): void {
+        const createdElement = view.getElementCreator();
+        const currentElement = this.elementCreator?.getCreatedElement();
+        while (currentElement?.firstChild) {
+            currentElement.firstChild.remove();
+        }
+        this.elementCreator?.addInnerElement(createdElement);
+    }
 }
