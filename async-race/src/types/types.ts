@@ -4,6 +4,13 @@ export interface ParametersElementCreator {
     textContent: string;
     callback: null | CallbackObject;
 }
+export interface ParametersInputCreator {
+    tag: string;
+    tagClasses: string[] | null;
+    textContent: string;
+    callback: null | CallbackObject;
+    buttonName?: string;
+}
 
 export type CallbackObject = {
     [key: string]: (event: Event | KeyboardEvent) => void;

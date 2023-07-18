@@ -1,4 +1,4 @@
-import { CallbackObject, FunctionObject, ParametersElementCreator } from '../../types/types';
+import { CallbackObject, FunctionObject, ParametersElementCreator, ParametersInputCreator } from '../../types/types';
 
 export default class ElementCreator {
     element: Element | null;
@@ -10,7 +10,7 @@ export default class ElementCreator {
         this.createElement(parameters);
     }
 
-    createElement(parameters: ParametersElementCreator): void {
+    createElement(parameters: ParametersElementCreator | ParametersInputCreator): void {
         this.element = document.createElement(parameters.tag);
         this.setClasses(parameters.tagClasses);
         this.setTextContent(parameters.textContent);
