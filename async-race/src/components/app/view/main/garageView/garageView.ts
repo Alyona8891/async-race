@@ -3,6 +3,7 @@ import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
 import View from '../../view';
 import './garage.css';
+import RaceBlockView from './raceBlockView/raceBlockView';
 
 export default class GarageView extends View {
     creatingField: string;
@@ -90,6 +91,8 @@ export default class GarageView extends View {
         };
         const generateCarsButton = new ElementCreator(parametersGenerateCarsButton);
         this.elementCreator?.addInnerElement(generateCarsButton.getCreatedElement());
+        const raceBlock = new RaceBlockView();
+        this.elementCreator?.addInnerElement(raceBlock.getElementCreator());
     }
 
     handler(event: Event, inputField: string) {
