@@ -2,10 +2,11 @@ import './oneGarage.css';
 import { ParametersElementCreator } from '../../../../../../../types/types';
 import ElementCreator from '../../../../../../units/elementCreator';
 import View from '../../../../view';
-import carElementString from '../../../../../../../data/data';
+import { carElementString } from '../../../../../../../data/data';
+import changeFill from '../../../../../../functions/changeFill';
 
 export default class OneGarageView extends View {
-    constructor() {
+    constructor(dataCar: Record<string, string>) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['race-block__garage', 'block-garage'],
@@ -13,10 +14,10 @@ export default class OneGarageView extends View {
             callback: null,
         };
         super(parameters);
-        this.configView();
+        this.configView(dataCar);
     }
 
-    configView(): void {
+    configView(dataCar: Record<string, string>): void {
         const parametersSelectButton: ParametersElementCreator = {
             tag: 'button',
             tagClasses: ['block-garage__button'],
@@ -36,7 +37,7 @@ export default class OneGarageView extends View {
         const parametersNameModeleElement: ParametersElementCreator = {
             tag: 'span',
             tagClasses: ['block-garage__name'],
-            textContent: 'Opel',
+            textContent: dataCar.name,
             callback: null,
         };
         const nameModeleElement = new ElementCreator(parametersNameModeleElement);
@@ -55,6 +56,10 @@ export default class OneGarageView extends View {
             textContent: 'A',
             callback: null,
         };
+        const createdRoadContainer = roadContainer?.getCreatedElement();
+        if (createdRoadContainer) {
+            createdRoadContainer.id = dataCar.id;
+        }
         const startButton = new ElementCreator(parametersStartButton);
         roadContainer.addInnerElement(startButton);
         const parametersStopButton: ParametersElementCreator = {
@@ -65,7 +70,7 @@ export default class OneGarageView extends View {
         };
         const stopButton = new ElementCreator(parametersStopButton);
         roadContainer.addInnerElement(stopButton);
-        roadContainer.getCreatedElement()?.insertAdjacentHTML('beforeend', carElementString);
+        roadContainer.getCreatedElement()?.insertAdjacentHTML('beforeend', changeFill(carElementString, dataCar.color));
         const parametersFlagElement: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['block-garage__flag'],

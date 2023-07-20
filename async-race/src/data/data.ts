@@ -1,11 +1,11 @@
-const carElementString = `<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+export const carElementString = `<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
 width="50px" height="30px" viewBox="0 0 1280.000000 640.000000"
 preserveAspectRatio="xMidYMid meet">
 <metadata>
 Created by potrace 1.15, written by Peter Selinger 2001-2017
 </metadata>
 <g transform="translate(0.000000,640.000000) scale(0.100000,-0.100000)"
-fill="#FFFFFF" stroke="none">
+fill stroke="none">
 <path d="M3565 5336 c-106 -30 -101 -26 -108 -111 -4 -42 -9 -80 -12 -85 -6
 -10 -246 -105 -590 -234 -448 -167 -1052 -415 -1173 -483 -78 -43 -193 -91
 -250 -104 -23 -5 -98 -14 -165 -19 -67 -6 -167 -19 -222 -30 -154 -31 -340
@@ -99,4 +99,10 @@ l-15 -73 3006 7 c1653 4 3007 8 3009 9 1 1 -8 37 -20 81 -19 67 -22 105 -22
 61 239 98 16 10 -216 242 -234 235z"/>
 </g>
 </svg>`;
-export default carElementString;
+
+export const baseUrl = 'http://localhost:3000';
+
+export const path = {
+    garage: '/garage',
+    winners: '/winners',
+};

@@ -1,3 +1,4 @@
+import { baseUrl, path } from '../../../../../data/data';
 import { ParametersElementCreator, ParametersInputCreator } from '../../../../../types/types';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
@@ -91,8 +92,7 @@ export default class GarageView extends View {
         };
         const generateCarsButton = new ElementCreator(parametersGenerateCarsButton);
         this.elementCreator?.addInnerElement(generateCarsButton.getCreatedElement());
-        const raceBlock = new RaceBlockView();
-        this.elementCreator?.addInnerElement(raceBlock.getElementCreator());
+        this.getCars();
     }
 
     handler(event: Event, inputField: string) {
@@ -105,5 +105,12 @@ export default class GarageView extends View {
         if (event.target instanceof HTMLButtonElement) {
             this[`${inputField}Color`] = event.target.value;
         }
+    }
+
+    async getCars() {
+        const response = await fetch(`${baseUrl}${path.garage}`);
+        const data = await response.json();
+        const raceBlock = new RaceBlockView(await data);
+        this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
     }
 }
