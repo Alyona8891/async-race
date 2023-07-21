@@ -19,13 +19,15 @@ export default class GarageView extends View {
 
     raceBlock!: RaceBlockView;
 
+    updatingCarId: string;
+
     constructor() {
         const parameters: ParametersElementCreator = {
             tag: 'section',
             tagClasses: ['page-main__garage-block', 'garage-block'],
             textContent: '',
             callback: {
-                click: (event: Event) => {
+                click: (event: Event): void | Record<string, string> => {
                     const { target } = event;
                     if ((target as HTMLElement).classList.contains('block-garage__delete-button')) {
                         const parent = (target as HTMLElement).closest('.block-garage');
@@ -40,13 +42,26 @@ export default class GarageView extends View {
                     if ((target as HTMLElement).classList.contains('block-garage__select-button')) {
                         const parent = (target as HTMLElement).closest('.block-garage');
                         let garageBlockId;
+                        let garageBlock;
+                        let svgElementFill;
+                        let nameCar;
                         if (parent) {
                             garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
                         }
-                        GarageView.deleteCar(garageBlockId);
-                        this.raceBlock.deleteContent();
-                        this.createGarageView();
+                        if (parent) {
+                            garageBlock = parent.querySelector('.block-garage__road-container');
+                            const svgElement = garageBlock.querySelector('svg > g');
+                            svgElementFill = (svgElement as SVGElement).getAttribute('fill');
+                        }
+                        if (parent) {
+                            nameCar = parent.querySelector('span')?.innerText;
+                        }
+                        const inputsArr = document.querySelectorAll('input');
+                        inputsArr[2].value = nameCar;
+                        inputsArr[3].value = svgElementFill;
+                        this.updatingCarId = garageBlockId;
                     }
+                    return {};
                 },
             },
         };
@@ -55,6 +70,7 @@ export default class GarageView extends View {
         this.creatingFieldColor = '#000000';
         this.updatingField = '';
         this.updatingFieldColor = '#000000';
+        this.updatingCarId = '';
         this.currentPage = 1;
         this.configView();
     }
@@ -91,7 +107,12 @@ export default class GarageView extends View {
                 click: (event) => {
                     const targetElement = event.target;
                     if (targetElement instanceof HTMLButtonElement) {
-                        alert('ku');
+                        GarageView.updateCar(this.updatingCarId, this.updatingField, this.updatingFieldColor);
+                        this.raceBlock.deleteContent();
+                        this.createGarageView();
+                        const inputsArr = document.querySelectorAll('input');
+                        inputsArr[2].value = '';
+                        inputsArr[3].value = '#000000';
                     }
                 },
             },
@@ -164,6 +185,18 @@ export default class GarageView extends View {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(body),
+        });
+        const car = await response.json();
+        return car;
+    }
+
+    static async updateCar(id, name, color) {
+        const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: `${name}`, color: `${color}` }),
         });
         const car = await response.json();
         return car;
