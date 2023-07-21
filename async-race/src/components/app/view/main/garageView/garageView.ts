@@ -30,7 +30,7 @@ export default class GarageView extends View {
         this.configView();
     }
 
-    configView() {
+    async configView() {
         let inputCreator;
         let inputParameters: ParametersInputCreator = {
             tag: 'div',
@@ -92,7 +92,14 @@ export default class GarageView extends View {
         };
         const generateCarsButton = new ElementCreator(parametersGenerateCarsButton);
         this.elementCreator?.addInnerElement(generateCarsButton.getCreatedElement());
-        this.getCars();
+        const parametersRaceBlock = await GarageView.getCars();
+        const data = await parametersRaceBlock.data;
+        const countCars = await parametersRaceBlock.countCars;
+        let raceBlock;
+        if (countCars) {
+            raceBlock = new RaceBlockView(data, countCars);
+        }
+        this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
     }
 
     handler(event: Event, inputField: string) {
@@ -107,10 +114,10 @@ export default class GarageView extends View {
         }
     }
 
-    async getCars() {
-        const response = await fetch(`${baseUrl}${path.garage}`);
+    static async getCars() {
+        const response = await fetch(`${baseUrl}${path.garage}?_page=1&_limit=7`);
         const data = await response.json();
-        const raceBlock = new RaceBlockView(await data);
-        this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
+        const countCars = await response.headers.get('X-Total-Count');
+        return { data, countCars };
     }
 }
