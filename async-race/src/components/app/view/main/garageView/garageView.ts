@@ -24,7 +24,31 @@ export default class GarageView extends View {
             tag: 'section',
             tagClasses: ['page-main__garage-block', 'garage-block'],
             textContent: '',
-            callback: null,
+            callback: {
+                click: (event: Event) => {
+                    const { target } = event;
+                    if ((target as HTMLElement).classList.contains('block-garage__delete-button')) {
+                        const parent = (target as HTMLElement).closest('.block-garage');
+                        let garageBlockId;
+                        if (parent) {
+                            garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
+                        }
+                        GarageView.deleteCar(garageBlockId);
+                        this.raceBlock.deleteContent();
+                        this.createGarageView();
+                    }
+                    if ((target as HTMLElement).classList.contains('block-garage__select-button')) {
+                        const parent = (target as HTMLElement).closest('.block-garage');
+                        let garageBlockId;
+                        if (parent) {
+                            garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
+                        }
+                        GarageView.deleteCar(garageBlockId);
+                        this.raceBlock.deleteContent();
+                        this.createGarageView();
+                    }
+                },
+            },
         };
         super(parameters);
         this.creatingField = '';
@@ -143,5 +167,13 @@ export default class GarageView extends View {
         });
         const car = await response.json();
         return car;
+    }
+
+    static async deleteCar(id) {
+        const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
+            method: 'DELETE',
+        });
+        const carDeleted = await response.json();
+        return carDeleted;
     }
 }

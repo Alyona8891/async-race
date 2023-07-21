@@ -20,7 +20,7 @@ export default class OneGarageView extends View {
     configView(dataCar: Record<string, string>): void {
         const parametersSelectButton: ParametersElementCreator = {
             tag: 'button',
-            tagClasses: ['block-garage__button'],
+            tagClasses: ['block-garage__select-button'],
             textContent: 'Select',
             callback: null,
         };
@@ -28,7 +28,7 @@ export default class OneGarageView extends View {
         this.elementCreator?.addInnerElement(selectButton);
         const parametersDeleteButton: ParametersElementCreator = {
             tag: 'button',
-            tagClasses: ['block-garage__button'],
+            tagClasses: ['block-garage__delete-button'],
             textContent: 'Delete',
             callback: null,
         };
@@ -50,16 +50,16 @@ export default class OneGarageView extends View {
         };
         const roadContainer = new ElementCreator(parametersRoadContainer);
         this.elementCreator?.addInnerElement(roadContainer);
+        const createdRoadContainer = roadContainer?.getCreatedElement();
+        if (createdRoadContainer) {
+            createdRoadContainer.id = dataCar.id;
+        }
         const parametersStartButton: ParametersElementCreator = {
             tag: 'button',
             tagClasses: ['block-garage__button_moving'],
             textContent: 'A',
             callback: null,
         };
-        const createdRoadContainer = roadContainer?.getCreatedElement();
-        if (createdRoadContainer) {
-            createdRoadContainer.id = dataCar.id;
-        }
         const startButton = new ElementCreator(parametersStartButton);
         roadContainer.addInnerElement(startButton);
         const parametersStopButton: ParametersElementCreator = {
