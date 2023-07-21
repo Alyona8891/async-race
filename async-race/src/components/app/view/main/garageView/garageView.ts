@@ -15,6 +15,10 @@ export default class GarageView extends View {
 
     updatingFieldColor: string;
 
+    currentPage: number;
+
+    raceBlock!: RaceBlockView;
+
     constructor() {
         const parameters: ParametersElementCreator = {
             tag: 'section',
@@ -27,6 +31,7 @@ export default class GarageView extends View {
         this.creatingFieldColor = '#000000';
         this.updatingField = '';
         this.updatingFieldColor = '#000000';
+        this.currentPage = 1;
         this.configView();
     }
 
@@ -41,8 +46,10 @@ export default class GarageView extends View {
                 change: (event) => this.handler(event, 'creatingField'),
                 click: (event) => {
                     const targetElement = event.target;
-                    if (targetElement instanceof HTMLButtonElement) {
-                        alert(`${this.creatingField} ${this.creatingFieldColor}`);
+                    if (targetElement instanceof HTMLButtonElement && this.creatingField) {
+                        GarageView.createCar({ name: this.creatingField, color: this.creatingFieldColor });
+                        this.raceBlock.deleteContent();
+                        this.createGarageView();
                     }
                 },
             },
@@ -92,14 +99,7 @@ export default class GarageView extends View {
         };
         const generateCarsButton = new ElementCreator(parametersGenerateCarsButton);
         this.elementCreator?.addInnerElement(generateCarsButton.getCreatedElement());
-        const parametersRaceBlock = await GarageView.getCars();
-        const data = await parametersRaceBlock.data;
-        const countCars = await parametersRaceBlock.countCars;
-        let raceBlock;
-        if (countCars) {
-            raceBlock = new RaceBlockView(data, countCars);
-        }
-        this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
+        this.createGarageView();
     }
 
     handler(event: Event, inputField: string) {
@@ -114,10 +114,34 @@ export default class GarageView extends View {
         }
     }
 
-    static async getCars() {
-        const response = await fetch(`${baseUrl}${path.garage}?_page=1&_limit=7`);
+    static async getCars(currentPage) {
+        const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=7`);
         const data = await response.json();
-        const countCars = await response.headers.get('X-Total-Count');
+        const countCars = Number(await response.headers.get('X-Total-Count'));
         return { data, countCars };
+    }
+
+    async createGarageView() {
+        const parametersRaceBlock = await GarageView.getCars(this.currentPage);
+        const data = await parametersRaceBlock.data;
+        const countCars = await parametersRaceBlock.countCars;
+        let raceBlock;
+        if (countCars) {
+            raceBlock = new RaceBlockView(data, countCars);
+            this.raceBlock = raceBlock;
+        }
+        this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
+    }
+
+    static async createCar(body) {
+        const response = await fetch(`${baseUrl}${path.garage}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+        const car = await response.json();
+        return car;
     }
 }
