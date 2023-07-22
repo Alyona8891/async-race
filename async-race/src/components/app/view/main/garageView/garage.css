@@ -2,3 +2,12 @@
     margin-right: 10px;
     padding: 5px;
 }
+
+@keyframes moving {
+    from {
+        left: 0;
+      }
+      to {
+        left: calc(100% - 60px);
+      }
+}

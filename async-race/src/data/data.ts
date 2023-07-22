@@ -1,5 +1,5 @@
 export const carElementString = `<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-width="50px" height="30px" viewBox="0 0 1280.000000 640.000000"
+width="60px" height="30px" viewBox="0 0 1280.000000 640.000000"
 preserveAspectRatio="xMidYMid meet">
 <metadata>
 Created by potrace 1.15, written by Peter Selinger 2001-2017
@@ -104,5 +104,9 @@ export const baseUrl = 'http://localhost:3000';
 
 export const path = {
     garage: '/garage',
+    engine: '/engine',
     winners: '/winners',
 };
+
+export const carBrands = ['Volvo', 'Audi', 'Nissan', 'BMW', 'Tesla', 'Ford', 'Opel', 'Mazda', 'Jeep', 'Dodge'];
+export const carModels = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];

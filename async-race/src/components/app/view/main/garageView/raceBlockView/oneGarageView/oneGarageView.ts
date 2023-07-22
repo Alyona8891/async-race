@@ -64,7 +64,7 @@ export default class OneGarageView extends View {
         roadContainer.addInnerElement(startButton);
         const parametersStopButton: ParametersElementCreator = {
             tag: 'button',
-            tagClasses: ['block-garage__button_moving'],
+            tagClasses: ['block-garage__button_stopping'],
             textContent: 'B',
             callback: null,
         };

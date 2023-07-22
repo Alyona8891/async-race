@@ -6,12 +6,21 @@
     display: flex;
     align-items: flex-start;
     border-bottom: white 2px solid;
+    height: 50px;
+    position: relative;
+    left: 0;
 }
 
 .block-garage__flag {
     width: 20px;
     height: 30px;
     position: absolute;
-    right: 150px;
+    bottom: 0;
+    right: 70px;
     background: url('./flag.svg') no-repeat;
+}
+
+svg {
+    position: absolute;
+    bottom: 0;
 }

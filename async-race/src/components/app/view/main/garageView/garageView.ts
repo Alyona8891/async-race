@@ -1,4 +1,4 @@
-import { baseUrl, path } from '../../../../../data/data';
+import { baseUrl, carBrands, carModels, path } from '../../../../../data/data';
 import { ParametersElementCreator, ParametersInputCreator } from '../../../../../types/types';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
@@ -27,7 +27,7 @@ export default class GarageView extends View {
             tagClasses: ['page-main__garage-block', 'garage-block'],
             textContent: '',
             callback: {
-                click: (event: Event): void | Record<string, string> => {
+                click: async (event: Event): Promise<void | Record<string, string>> => {
                     const { target } = event;
                     if ((target as HTMLElement).classList.contains('block-garage__delete-button')) {
                         const parent = (target as HTMLElement).closest('.block-garage');
@@ -58,8 +58,24 @@ export default class GarageView extends View {
                         }
                         const inputsArr = document.querySelectorAll('input');
                         inputsArr[2].value = nameCar;
+                        this.updatingField = nameCar;
                         inputsArr[3].value = svgElementFill;
+                        this.updatingFieldColor = svgElementFill;
                         this.updatingCarId = garageBlockId;
+                    }
+                    if ((target as HTMLElement).classList.contains('block-garage__button_moving')) {
+                        (target as HTMLElement).setAttribute('disabled', '');
+                        const parent = (target as HTMLElement).closest('.block-garage');
+                        let garageBlockId;
+                        let svgElement;
+                        if (parent) {
+                            garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
+                            const garageBlock = parent.querySelector('.block-garage__road-container');
+                            svgElement = garageBlock?.querySelector('svg');
+                        }
+                        const param = await GarageView.startEngine(garageBlockId);
+                        const time = (await param.distance) / (await param.velocity) / 1000;
+                        (svgElement as HTMLElement).style.animation = `moving ${await time}s linear forwards`;
                     }
                     return {};
                 },
@@ -140,7 +156,17 @@ export default class GarageView extends View {
             tag: 'button',
             tagClasses: ['garage-block__button'],
             textContent: 'GENERATE CARS',
-            callback: null,
+            callback: {
+                click: () => {
+                    for (let i = 0; i < 100; i += 1) {
+                        const modelCar = GarageView.getRandomNameCar(carBrands, carModels);
+                        const colorCar = GarageView.getRandomColor();
+                        GarageView.createCar(GarageView.createBody(modelCar, colorCar));
+                    }
+                    this.raceBlock.deleteContent();
+                    this.createGarageView();
+                },
+            },
         };
         const generateCarsButton = new ElementCreator(parametersGenerateCarsButton);
         this.elementCreator?.addInnerElement(generateCarsButton.getCreatedElement());
@@ -208,5 +234,33 @@ export default class GarageView extends View {
         });
         const carDeleted = await response.json();
         return carDeleted;
+    }
+
+    static getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i += 1) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    static getRandomNameCar(arr1, arr2) {
+        let nameCar = '';
+        nameCar += arr1[Math.floor(Math.random() * 10)];
+        nameCar += arr2[Math.floor(Math.random() * 10)];
+        return nameCar;
+    }
+
+    static createBody(modelCar, colorCar) {
+        return { name: modelCar, color: colorCar };
+    }
+
+    static async startEngine(id) {
+        const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=started`, {
+            method: 'PATCH',
+        });
+        const data = await response.json();
+        return data;
     }
 }
