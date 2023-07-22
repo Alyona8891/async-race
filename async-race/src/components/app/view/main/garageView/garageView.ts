@@ -73,9 +73,28 @@ export default class GarageView extends View {
                             const garageBlock = parent.querySelector('.block-garage__road-container');
                             svgElement = garageBlock?.querySelector('svg');
                         }
-                        const param = await GarageView.startEngine(garageBlockId);
-                        const time = (await param.distance) / (await param.velocity) / 1000;
+                        const parametersMoving = await GarageView.startEngine(garageBlockId, 'started');
+                        const time =
+                            (await parametersMoving.data.distance) / (await parametersMoving.data.velocity) / 1000;
                         (svgElement as HTMLElement).style.animation = `moving ${await time}s linear forwards`;
+                        try {
+                            await GarageView.startEngine(garageBlockId, 'drive');
+                        } catch {
+                            (svgElement as HTMLElement).style.animationPlayState = 'paused';
+                        }
+                    }
+                    if ((target as HTMLElement).classList.contains('block-garage__button_stopping')) {
+                        (target as HTMLElement).setAttribute('disabled', '');
+                        const parent = (target as HTMLElement).closest('.block-garage');
+                        let garageBlockId;
+                        let svgElement;
+                        if (parent) {
+                            garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
+                            const garageBlock = parent.querySelector('.block-garage__road-container');
+                            svgElement = garageBlock?.querySelector('svg');
+                        }
+                        await GarageView.startEngine(garageBlockId, 'stopped');
+                        (svgElement as HTMLElement).style.animation = '';
                     }
                     return {};
                 },
@@ -140,7 +159,53 @@ export default class GarageView extends View {
             tag: 'button',
             tagClasses: ['garage-block__button'],
             textContent: 'RACE',
-            callback: null,
+            callback: {
+                click: async () => {
+                    const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
+                    const arrElementsId: string[] = [];
+                    const svgElementsList = document.querySelectorAll(
+                        '.block-garage__road-container > svg'
+                    ) as unknown as HTMLBRElement[];
+                    roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
+                    const arrPromisesStarted = arrElementsId.map(
+                        (el) =>
+                            new Promise((resolve, reject) => {
+                                fetch(`${baseUrl}${path.engine}?id=${el}&status=started`, {
+                                    method: 'PATCH',
+                                })
+                                    .then((response) => {
+                                        return response.json();
+                                    })
+                                    .then((data) => {
+                                        resolve(data);
+                                    })
+                                    .catch((error) => {
+                                        reject(error);
+                                    });
+                            })
+                    );
+                    Promise.all(arrPromisesStarted).then(async (values) => {
+                        const requestsResult = arrElementsId.map(async (el, i) => {
+                            try {
+                                const result = await GarageView.startEngine(el, 'drive');
+                                return result;
+                            } catch (error) {
+                                svgElementsList[i].style.animationPlayState = 'paused';
+                                throw error;
+                            }
+                        });
+                        svgElementsList.forEach((el, i) => {
+                            el.style.animation = `moving ${
+                                (values[i] as Record<string, number>).distance /
+                                (values[i] as Record<string, number>).velocity /
+                                1000
+                            }s linear forwards`;
+                        });
+                        const winnerData = await Promise.any(requestsResult);
+                        console.log(winnerData);
+                    });
+                },
+            },
         };
         const raceButton = new ElementCreator(parametersRaceButton);
         this.elementCreator?.addInnerElement(raceButton.getCreatedElement());
@@ -256,11 +321,11 @@ export default class GarageView extends View {
         return { name: modelCar, color: colorCar };
     }
 
-    static async startEngine(id) {
-        const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=started`, {
+    static async startEngine(id, status) {
+        const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=${status}`, {
             method: 'PATCH',
         });
         const data = await response.json();
-        return data;
+        return { data, id };
     }
 }
