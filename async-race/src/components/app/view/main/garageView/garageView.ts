@@ -21,6 +21,8 @@ export default class GarageView extends View {
 
     updatingCarId: string;
 
+    maxPage: number;
+
     constructor() {
         const parameters: ParametersElementCreator = {
             tag: 'section',
@@ -37,7 +39,7 @@ export default class GarageView extends View {
                         }
                         GarageView.deleteCar(garageBlockId);
                         this.raceBlock.deleteContent();
-                        this.createGarageView();
+                        this.createGarageView(this.currentPage);
                     }
                     if ((target as HTMLElement).classList.contains('block-garage__select-button')) {
                         const parent = (target as HTMLElement).closest('.block-garage');
@@ -107,6 +109,7 @@ export default class GarageView extends View {
         this.updatingFieldColor = '#000000';
         this.updatingCarId = '';
         this.currentPage = 1;
+        this.maxPage = 1;
         this.configView();
     }
 
@@ -124,7 +127,7 @@ export default class GarageView extends View {
                     if (targetElement instanceof HTMLButtonElement && this.creatingField) {
                         GarageView.createCar({ name: this.creatingField, color: this.creatingFieldColor });
                         this.raceBlock.deleteContent();
-                        this.createGarageView();
+                        this.createGarageView(this.currentPage);
                     }
                 },
             },
@@ -144,7 +147,7 @@ export default class GarageView extends View {
                     if (targetElement instanceof HTMLButtonElement) {
                         GarageView.updateCar(this.updatingCarId, this.updatingField, this.updatingFieldColor);
                         this.raceBlock.deleteContent();
-                        this.createGarageView();
+                        this.createGarageView(this.currentPage);
                         const inputsArr = document.querySelectorAll('input');
                         inputsArr[2].value = '';
                         inputsArr[3].value = '#000000';
@@ -165,7 +168,7 @@ export default class GarageView extends View {
                     const arrElementsId: string[] = [];
                     const svgElementsList = document.querySelectorAll(
                         '.block-garage__road-container > svg'
-                    ) as unknown as HTMLBRElement[];
+                    ) as unknown as HTMLElement[];
                     roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
                     const arrPromisesStarted = arrElementsId.map(
                         (el) =>
@@ -195,14 +198,25 @@ export default class GarageView extends View {
                             }
                         });
                         svgElementsList.forEach((el, i) => {
-                            el.style.animation = `moving ${
+                            const newEl = el;
+                            newEl.style.animation = `moving ${
                                 (values[i] as Record<string, number>).distance /
                                 (values[i] as Record<string, number>).velocity /
                                 1000
                             }s linear forwards`;
                         });
-                        const winnerData = await Promise.any(requestsResult);
-                        console.log(winnerData);
+                        Promise.any(requestsResult).then((data) => {
+                            const { id } = data;
+                            const raceBlockById = document.getElementById(id);
+                            const parent = (raceBlockById as HTMLElement)?.closest('.block-garage');
+                            const winnerName = (parent as unknown as HTMLElement).querySelector('span')?.textContent;
+                            console.log(winnerName);
+                            const modalWindow = document.querySelector('.garage-block__modal-window');
+                            modalWindow?.classList.remove('garage-block__modal-window_unvisible');
+                            if (modalWindow && modalWindow instanceof HTMLElement) {
+                                modalWindow.textContent = `${winnerName} went first!`;
+                            }
+                        });
                     });
                 },
             },
@@ -213,7 +227,22 @@ export default class GarageView extends View {
             tag: 'button',
             tagClasses: ['garage-block__button'],
             textContent: 'RESET',
-            callback: null,
+            callback: {
+                click: () => {
+                    const modalWindow = document.querySelector('.garage-block__modal-window');
+                    modalWindow?.classList.add('garage-block__modal-window_unvisible');
+                    const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
+                    const arrElementsId: string[] = [];
+                    const svgElementsList = document.querySelectorAll(
+                        '.block-garage__road-container > svg'
+                    ) as unknown as HTMLElement[];
+                    roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
+                    arrElementsId.forEach(async (el, i) => {
+                        svgElementsList[i].style.animation = '';
+                        await GarageView.startEngine(el, 'stopped');
+                    });
+                },
+            },
         };
         const resetButton = new ElementCreator(parametersResetButton);
         this.elementCreator?.addInnerElement(resetButton.getCreatedElement());
@@ -229,13 +258,54 @@ export default class GarageView extends View {
                         GarageView.createCar(GarageView.createBody(modelCar, colorCar));
                     }
                     this.raceBlock.deleteContent();
-                    this.createGarageView();
+                    this.createGarageView(this.currentPage);
                 },
             },
         };
         const generateCarsButton = new ElementCreator(parametersGenerateCarsButton);
         this.elementCreator?.addInnerElement(generateCarsButton.getCreatedElement());
-        this.createGarageView();
+        this.createGarageView(this.currentPage);
+        const parametersModalWindow: ParametersElementCreator = {
+            tag: 'div',
+            tagClasses: ['garage-block__modal-window', 'garage-block__modal-window_unvisible'],
+            textContent: '',
+            callback: null,
+        };
+        const modalWindow = new ElementCreator(parametersModalWindow);
+        this.elementCreator?.addInnerElement(modalWindow.getCreatedElement());
+        const parametersButtonPrev: ParametersElementCreator = {
+            tag: 'button',
+            tagClasses: ['garage-block__pagination-prev'],
+            textContent: 'Prev Page',
+            callback: {
+                click: () => {
+                    if (this.currentPage !== 1) {
+                        this.currentPage -= 1;
+                        this.raceBlock.deleteContent();
+                        this.createGarageView(this.currentPage);
+                    }
+                },
+            },
+        };
+        const buttonPrev = new ElementCreator(parametersButtonPrev);
+        this.elementCreator?.addInnerElement(buttonPrev.getCreatedElement());
+        const parametersButtonNext: ParametersElementCreator = {
+            tag: 'button',
+            tagClasses: ['garage-block__pagination-next'],
+            textContent: 'Next Page',
+            callback: {
+                click: () => {
+                    if (this.currentPage !== this.maxPage) {
+                        this.currentPage += 1;
+                        GarageView.getCars(this.currentPage);
+                        this.raceBlock.deleteContent();
+                        this.createGarageView(this.currentPage);
+                    }
+                },
+            },
+        };
+        const buttonNext = new ElementCreator(parametersButtonNext);
+        this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
     }
 
     handler(event: Event, inputField: string) {
@@ -254,17 +324,20 @@ export default class GarageView extends View {
         const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=7`);
         const data = await response.json();
         const countCars = Number(await response.headers.get('X-Total-Count'));
-        return { data, countCars };
+        const maxPage = Math.ceil(countCars / 7);
+        return { data, countCars, maxPage };
     }
 
-    async createGarageView() {
+    async createGarageView(currentPage) {
         const parametersRaceBlock = await GarageView.getCars(this.currentPage);
         const data = await parametersRaceBlock.data;
         const countCars = await parametersRaceBlock.countCars;
+        const maxPage = await parametersRaceBlock.maxPage;
         let raceBlock;
         if (countCars) {
-            raceBlock = new RaceBlockView(data, countCars);
+            raceBlock = new RaceBlockView(data, countCars, currentPage);
             this.raceBlock = raceBlock;
+            this.maxPage = maxPage;
         }
         this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
     }

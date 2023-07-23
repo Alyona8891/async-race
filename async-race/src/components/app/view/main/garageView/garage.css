@@ -1,13 +1,19 @@
+.garage-block {
+  position: relative;
+}
+
 .garage-block__button {
     margin-right: 10px;
     padding: 5px;
 }
 
-@keyframes moving {
-    from {
-        left: 0;
-      }
-      to {
-        left: calc(100% - 60px);
-      }
+.garage-block__modal-window {
+  position: absolute;
+  text-align: center;
+  z-index: 2;
+  right: 45%;
+}
+
+.garage-block__modal-window_unvisible {
+  display: none;
 }

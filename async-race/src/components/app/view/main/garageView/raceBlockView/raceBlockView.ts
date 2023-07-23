@@ -6,7 +6,7 @@ import OneGarageView from './oneGarageView/oneGarageView';
 export default class RaceBlockView extends View {
     arrElements: HTMLElement[];
 
-    constructor(dataCars: [], countCars: number) {
+    constructor(dataCars: [], countCars: number, currentPage: number) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__race-block', 'race-block'],
@@ -15,10 +15,10 @@ export default class RaceBlockView extends View {
         };
         super(parameters);
         this.arrElements = [];
-        this.configView(dataCars, countCars);
+        this.configView(dataCars, countCars, currentPage);
     }
 
-    configView(dataCars: [], countCars: number): void {
+    configView(dataCars: [], countCars: number, currentPage: number): void {
         const parametersRaceBlockTitle: ParametersElementCreator = {
             tag: 'h2',
             tagClasses: ['race-block__title'],
@@ -30,7 +30,7 @@ export default class RaceBlockView extends View {
         const parametersRaceBlockSubtitle: ParametersElementCreator = {
             tag: 'h3',
             tagClasses: ['race-block__subtitle'],
-            textContent: 'Page #1',
+            textContent: `Page #${currentPage}`,
             callback: null,
         };
         const raceBlockSubtitle = new ElementCreator(parametersRaceBlockSubtitle);

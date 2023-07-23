@@ -23,4 +23,15 @@
 svg {
     position: absolute;
     bottom: 0;
+    left: 0;
+}
+
+
+@keyframes moving {
+    from {
+        left: 0;
+      }
+      to {
+        left: calc(100% - 60px);
+      }
 }
