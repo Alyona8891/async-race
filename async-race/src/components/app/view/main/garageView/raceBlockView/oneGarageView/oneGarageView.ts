@@ -3,7 +3,7 @@ import { ParametersElementCreator } from '../../../../../../../types/types';
 import ElementCreator from '../../../../../../units/elementCreator';
 import View from '../../../../view';
 import { carElementString } from '../../../../../../../data/data';
-import changeFill from '../../../../../../functions/changeFill';
+import changeFillSize from '../../../../../../functions/changeFill';
 
 export default class OneGarageView extends View {
     constructor(dataCar: Record<string, string>) {
@@ -70,7 +70,9 @@ export default class OneGarageView extends View {
         };
         const stopButton = new ElementCreator(parametersStopButton);
         roadContainer.addInnerElement(stopButton);
-        roadContainer.getCreatedElement()?.insertAdjacentHTML('beforeend', changeFill(carElementString, dataCar.color));
+        roadContainer
+            .getCreatedElement()
+            ?.insertAdjacentHTML('beforeend', changeFillSize(carElementString, dataCar.color, 60));
         const parametersFlagElement: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['block-garage__flag'],

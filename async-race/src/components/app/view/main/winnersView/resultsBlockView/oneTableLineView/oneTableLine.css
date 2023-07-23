@@ -1,0 +1,32 @@
+.garage-block__table-line {
+    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 5px 0;
+}
+
+.number {
+    width: 40px;
+}
+
+.car {
+    width: 40px;
+}
+
+.garage-block__table-line .car {
+    padding: 0;
+}
+
+.name {
+    width: 150px;
+}
+
+.wins {
+    width: 70px;
+}
+
+.time {
+    width: 200px;
+}

@@ -20,7 +20,7 @@
     background: url('./flag.svg') no-repeat;
 }
 
-svg {
+.block-garage__road-container svg {
     position: absolute;
     bottom: 0;
     left: 0;

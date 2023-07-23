@@ -113,7 +113,7 @@ export default class GarageView extends View {
         this.configView();
     }
 
-    async configView() {
+    configView() {
         let inputCreator;
         let inputParameters: ParametersInputCreator = {
             tag: 'div',
@@ -297,7 +297,6 @@ export default class GarageView extends View {
                 click: () => {
                     if (this.currentPage !== this.maxPage) {
                         this.currentPage += 1;
-                        GarageView.getCars(this.currentPage);
                         this.raceBlock.deleteContent();
                         this.createGarageView(this.currentPage);
                     }

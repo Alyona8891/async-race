@@ -1,0 +1,15 @@
+.winners-block__container {
+    display: flex;
+}
+
+.garage-block__header-table {
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 5px 0;
+}
+
+.wins-sort, .time-sort {
+    cursor: pointer;
+}
