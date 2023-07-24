@@ -29,12 +29,21 @@ export interface PageParameter {
     callBack: null | CallbackObject;
 }
 
-export type DataGetCars = {
-    [key: string]: string;
-}[];
+export interface DataOneCar {
+    name: string;
+    color: string;
+    id: number;
+}
+
 export type DataDrive = {
     distance: number;
     velocity: number;
+};
+
+export type WinnerData = {
+    wins: number;
+    time: number;
+    id: number;
 };
 
 export interface DataDriveResult {
@@ -44,7 +53,7 @@ export interface DataDriveResult {
 }
 
 export interface GarageViewData {
-    data: DataGetCars;
+    data: DataOneCar[];
     countCars: number;
     maxPage: number;
 }

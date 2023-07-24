@@ -4,6 +4,7 @@ import {
     GarageViewData,
     ParametersElementCreator,
     ParametersInputCreator,
+    WinnerData,
 } from '../../../../../types/types';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
@@ -45,6 +46,7 @@ export default class GarageView extends View {
                             garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
                         }
                         GarageView.deleteCar(garageBlockId);
+                        GarageView.deleteWinner(garageBlockId);
                         this.raceBlock.deleteContent();
                         this.createGarageView(this.currentPage);
                     }
@@ -210,6 +212,7 @@ export default class GarageView extends View {
                                 ).toFixed(2);
                                 return result;
                             } catch (error) {
+                                console.log(999);
                                 svgElementsList[i].style.animationPlayState = 'paused';
                                 throw error;
                             }
@@ -236,15 +239,13 @@ export default class GarageView extends View {
                                 if (modalWindow && modalWindow instanceof HTMLElement) {
                                     modalWindow.textContent = `${winnerName} went first! Time: ${winnerTime}`;
                                 }
-                                return { idWinner, winnerTime };
+                                return { idWinner: +idWinner, winnerTime };
                             })
-                            .then((data) =>
-                                GarageView.createWinner({
-                                    id: data.idWinner,
-                                    wins: +data.idWinner,
-                                    time: +data.idWinner,
-                                })
-                            );
+                            .then((data) => {
+                                if (data.winnerTime) {
+                                    GarageView.checkWinner(data.idWinner, +data.idWinner, +data.winnerTime);
+                                }
+                            });
                     });
                 },
             },
@@ -429,7 +430,7 @@ export default class GarageView extends View {
         return { data, id };
     }
 
-    static async createWinner(body: { id: string; wins: number; time: number }): Promise<void> {
+    static async createWinner(body: { id: number; wins: number; time: number }): Promise<void> {
         const response = await fetch(`${baseUrl}${path.winners}`, {
             method: 'POST',
             headers: {
@@ -439,5 +440,61 @@ export default class GarageView extends View {
         });
         const winner = await response.json();
         return winner;
+    }
+
+    static createBodyWinner(idWin: number, winsWin: number, timeWin: number) {
+        return { id: idWin, wins: winsWin, time: timeWin };
+    }
+
+    static async getWinner(id: number): Promise<WinnerData> {
+        const response = await fetch(`${baseUrl}${path.winners}/${id}`);
+        const winner = await response.json();
+        return winner;
+    }
+
+    static async updateWinner(id: number, wins: number, time: number): Promise<void> {
+        const response = await fetch(`${baseUrl}${path.winners}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ wins: `${wins}`, time: `${time}` }),
+        });
+        const updateWinner = await response.json();
+        return updateWinner;
+    }
+
+    static async checkWinner(idWin: number, winsWin: number, timeWin: number) {
+        try {
+            const winner = await GarageView.getWinner(idWin);
+            if (!winner.id) {
+                await GarageView.createWinner(GarageView.createBodyWinner(idWin, 1, timeWin));
+            } else {
+                const winnerLastWins = await winner.wins;
+                const winnerNewWins = +winnerLastWins + 1;
+                const winnerLastBestTime = await winner.time;
+                if (winnerLastBestTime < timeWin) {
+                    await GarageView.updateWinner(idWin, winnerNewWins, winnerLastBestTime);
+                } else {
+                    await GarageView.updateWinner(idWin, winnerNewWins, timeWin);
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    static async deleteWinner(idWin: number): Promise<void> {
+        try {
+            const winner = await GarageView.getWinner(idWin);
+            if (winner.id) {
+                const response = await fetch(`${baseUrl}${path.winners}/${idWin}`, {
+                    method: 'DELETE',
+                });
+                await response.json();
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 }

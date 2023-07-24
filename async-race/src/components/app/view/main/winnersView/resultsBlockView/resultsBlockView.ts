@@ -1,9 +1,10 @@
 import './resultsBlock.css';
 import View from '../../../view';
-import { ParametersElementCreator } from '../../../../../../types/types';
+import { DataOneCar, ParametersElementCreator, WinnerData } from '../../../../../../types/types';
 import ElementCreator from '../../../../../units/elementCreator';
 import WinnersTableHeaderView from '../winnersTableHeader/winnersTableHeaderView';
 import OneTablelineView from './oneTableLineView/oneTableLineView';
+import { baseUrl, path } from '../../../../../../data/data';
 
 export default class ResultsBlockView extends View {
     constructor(dataWinners: [], countCars: number, currentPage: number) {
@@ -17,7 +18,7 @@ export default class ResultsBlockView extends View {
         this.configView(dataWinners, countCars, currentPage);
     }
 
-    configView(dataWinners: [], countWinners: number, currentPage: number): void {
+    configView(dataWinners: WinnerData[], countWinners: number, currentPage: number): void {
         const parametersResultBlockTitle: ParametersElementCreator = {
             tag: 'h2',
             tagClasses: ['results-block__title'],
@@ -36,9 +37,12 @@ export default class ResultsBlockView extends View {
         this.elementCreator?.addInnerElement(resultBlockSubtitle);
         const tableHeader = new WinnersTableHeaderView();
         this.elementCreator?.addInnerElement(tableHeader.getElementCreator());
-        dataWinners.forEach((el: Record<string, string>, i: number) => {
-            const oneGarage = new OneTablelineView(i + 1, '#FFFFFF', 'nnnnn', el.wins, el.time);
-            this.elementCreator?.addInnerElement(oneGarage.getElementCreator());
+        let numberLine = 0;
+        dataWinners.forEach(async (el) => {
+            const dataOneCar = await ResultsBlockView.getOneCar(el.id);
+            numberLine += 1;
+            const oneGarage = new OneTablelineView(numberLine, dataOneCar.color, dataOneCar.name, el.wins, el.time);
+            await this.elementCreator?.addInnerElement(oneGarage.getElementCreator());
         });
     }
 
@@ -47,5 +51,11 @@ export default class ResultsBlockView extends View {
         while (htmlElement?.firstElementChild) {
             htmlElement.firstElementChild.remove();
         }
+    }
+
+    static async getOneCar(id: number): Promise<DataOneCar> {
+        const response = await fetch(`${baseUrl}${path.garage}/${id}`);
+        const data = await response.json();
+        return data;
     }
 }

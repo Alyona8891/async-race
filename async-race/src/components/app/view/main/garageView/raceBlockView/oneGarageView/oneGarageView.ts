@@ -1,12 +1,12 @@
 import './oneGarage.css';
-import { ParametersElementCreator } from '../../../../../../../types/types';
+import { DataOneCar, ParametersElementCreator } from '../../../../../../../types/types';
 import ElementCreator from '../../../../../../units/elementCreator';
 import View from '../../../../view';
 import { carElementString } from '../../../../../../../data/data';
 import changeFillSize from '../../../../../../functions/changeFill';
 
 export default class OneGarageView extends View {
-    constructor(dataCar: Record<string, string>) {
+    constructor(dataCar: DataOneCar) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['race-block__garage', 'block-garage'],
@@ -17,7 +17,7 @@ export default class OneGarageView extends View {
         this.configView(dataCar);
     }
 
-    configView(dataCar: Record<string, string>): void {
+    configView(dataCar: DataOneCar): void {
         const parametersSelectButton: ParametersElementCreator = {
             tag: 'button',
             tagClasses: ['block-garage__select-button'],
@@ -52,7 +52,7 @@ export default class OneGarageView extends View {
         this.elementCreator?.addInnerElement(roadContainer);
         const createdRoadContainer = roadContainer?.getCreatedElement();
         if (createdRoadContainer) {
-            createdRoadContainer.id = dataCar.id;
+            createdRoadContainer.id = dataCar.id.toString();
         }
         const parametersStartButton: ParametersElementCreator = {
             tag: 'button',

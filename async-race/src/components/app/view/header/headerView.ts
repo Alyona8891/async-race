@@ -38,7 +38,6 @@ export default class HeaderView extends View {
         const creatorNav = new ElementCreator(parametersNav);
         this.elementCreator?.addInnerElement(creatorNav);
         const garageView = new GarageView();
-        const winnersView = new WinnersView();
         const pagesParameters = [
             {
                 name: NAME_PAGES.garage.toLocaleUpperCase(),
@@ -52,7 +51,7 @@ export default class HeaderView extends View {
                 name: NAME_PAGES.winners.toLocaleUpperCase(),
                 callBack: {
                     click: () => {
-                        mainView.redrawContent(winnersView);
+                        mainView.redrawContent(new WinnersView());
                     },
                 },
             },

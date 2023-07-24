@@ -66,7 +66,6 @@ export default class WinnersView extends View {
             `${baseUrl}${path.winners}?_page=${currentPage}&_limit=10&_sort=${sortParameter}&_order=${orderParameter}`
         );
         const data = await response.json();
-        console.log(data);
         const countWinners = Number(await response.headers.get('X-Total-Count'));
         const maxPage = Math.ceil(countWinners / 10);
         return { data, countWinners, maxPage };
