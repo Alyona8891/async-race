@@ -28,3 +28,23 @@ export interface PageParameter {
     name: string;
     callBack: null | CallbackObject;
 }
+
+export type DataGetCars = {
+    [key: string]: string;
+}[];
+export type DataDrive = {
+    distance: number;
+    velocity: number;
+};
+
+export interface DataDriveResult {
+    data: DataDrive;
+    id: string;
+    time?: string;
+}
+
+export interface GarageViewData {
+    data: DataGetCars;
+    countCars: number;
+    maxPage: number;
+}

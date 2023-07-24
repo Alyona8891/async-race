@@ -6,7 +6,7 @@ import { carElementString } from '../../../../../../../data/data';
 import changeFillSize from '../../../../../../functions/changeFill';
 
 export default class OneTablelineView extends View {
-    constructor() {
+    constructor(number, color, nameCar, winsCount, time) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['winners-block__container'],
@@ -14,7 +14,7 @@ export default class OneTablelineView extends View {
             callback: null,
         };
         super(parameters);
-        this.configView(1, '#ffffff', 'Mazda', 5, 5);
+        this.configView(number, color, nameCar, winsCount, time);
     }
 
     configView(number, color, nameCar, winsCount, time): void {

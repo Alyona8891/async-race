@@ -1,5 +1,10 @@
 import { baseUrl, carBrands, carModels, path } from '../../../../../data/data';
-import { ParametersElementCreator, ParametersInputCreator } from '../../../../../types/types';
+import {
+    DataDriveResult,
+    GarageViewData,
+    ParametersElementCreator,
+    ParametersInputCreator,
+} from '../../../../../types/types';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
 import View from '../../view';
@@ -22,6 +27,8 @@ export default class GarageView extends View {
     updatingCarId: string;
 
     maxPage: number;
+
+    timeValues: Record<string, string>[] | unknown[];
 
     constructor() {
         const parameters: ParametersElementCreator = {
@@ -110,10 +117,11 @@ export default class GarageView extends View {
         this.updatingCarId = '';
         this.currentPage = 1;
         this.maxPage = 1;
+        this.timeValues = [{ string: 'string' }];
         this.configView();
     }
 
-    configView() {
+    configView(): void {
         let inputCreator;
         let inputParameters: ParametersInputCreator = {
             tag: 'div',
@@ -142,7 +150,7 @@ export default class GarageView extends View {
             callback: {
                 keyup: (event) => this.handler(event, 'updatingField'),
                 change: (event) => this.handler(event, 'updatingField'),
-                click: (event) => {
+                click: (event): void => {
                     const targetElement = event.target;
                     if (targetElement instanceof HTMLButtonElement) {
                         GarageView.updateCar(this.updatingCarId, this.updatingField, this.updatingFieldColor);
@@ -179,6 +187,9 @@ export default class GarageView extends View {
                                     .then((response) => {
                                         return response.json();
                                     })
+                                    .then((dataResp) => {
+                                        return { data: dataResp, id: el };
+                                    })
                                     .then((data) => {
                                         resolve(data);
                                     })
@@ -188,9 +199,15 @@ export default class GarageView extends View {
                             })
                     );
                     Promise.all(arrPromisesStarted).then(async (values) => {
+                        console.log(values);
                         const requestsResult = arrElementsId.map(async (el, i) => {
                             try {
-                                const result = await GarageView.startEngine(el, 'drive');
+                                const result: DataDriveResult = await GarageView.startEngine(el, 'drive');
+                                result.time = (
+                                    (values[i] as DataDriveResult).data.distance /
+                                    (values[i] as DataDriveResult).data.velocity /
+                                    1000
+                                ).toFixed(2);
                                 return result;
                             } catch (error) {
                                 svgElementsList[i].style.animationPlayState = 'paused';
@@ -200,23 +217,34 @@ export default class GarageView extends View {
                         svgElementsList.forEach((el, i) => {
                             const newEl = el;
                             newEl.style.animation = `moving ${
-                                (values[i] as Record<string, number>).distance /
-                                (values[i] as Record<string, number>).velocity /
+                                (values[i] as DataDriveResult).data.distance /
+                                (values[i] as DataDriveResult).data.velocity /
                                 1000
                             }s linear forwards`;
                         });
-                        Promise.any(requestsResult).then((data) => {
-                            const { id } = data;
-                            const raceBlockById = document.getElementById(id);
-                            const parent = (raceBlockById as HTMLElement)?.closest('.block-garage');
-                            const winnerName = (parent as unknown as HTMLElement).querySelector('span')?.textContent;
-                            console.log(winnerName);
-                            const modalWindow = document.querySelector('.garage-block__modal-window');
-                            modalWindow?.classList.remove('garage-block__modal-window_unvisible');
-                            if (modalWindow && modalWindow instanceof HTMLElement) {
-                                modalWindow.textContent = `${winnerName} went first!`;
-                            }
-                        });
+                        Promise.any(requestsResult)
+                            .then((data) => {
+                                const idWinner = data.id;
+                                const winnerTime = data.time;
+                                console.log(winnerTime);
+                                const raceBlockById = document.getElementById(idWinner);
+                                const parent = (raceBlockById as HTMLElement)?.closest('.block-garage');
+                                const winnerName = (parent as unknown as HTMLElement).querySelector('span')
+                                    ?.textContent;
+                                const modalWindow = document.querySelector('.garage-block__modal-window');
+                                modalWindow?.classList.remove('garage-block__modal-window_unvisible');
+                                if (modalWindow && modalWindow instanceof HTMLElement) {
+                                    modalWindow.textContent = `${winnerName} went first! Time: ${winnerTime}`;
+                                }
+                                return { idWinner, winnerTime };
+                            })
+                            .then((data) =>
+                                GarageView.createWinner({
+                                    id: data.idWinner,
+                                    wins: +data.idWinner,
+                                    time: +data.idWinner,
+                                })
+                            );
                     });
                 },
             },
@@ -307,7 +335,7 @@ export default class GarageView extends View {
         this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
     }
 
-    handler(event: Event, inputField: string) {
+    handler(event: Event, inputField: string): void {
         if (event.target instanceof HTMLInputElement && !event.target.hasAttribute('type')) {
             this[inputField] = event.target.value;
         }
@@ -319,7 +347,7 @@ export default class GarageView extends View {
         }
     }
 
-    static async getCars(currentPage) {
+    static async getCars(currentPage: number): Promise<object> {
         const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=7`);
         const data = await response.json();
         const countCars = Number(await response.headers.get('X-Total-Count'));
@@ -327,8 +355,8 @@ export default class GarageView extends View {
         return { data, countCars, maxPage };
     }
 
-    async createGarageView(currentPage) {
-        const parametersRaceBlock = await GarageView.getCars(this.currentPage);
+    async createGarageView(currentPage: number) {
+        const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageViewData;
         const data = await parametersRaceBlock.data;
         const countCars = await parametersRaceBlock.countCars;
         const maxPage = await parametersRaceBlock.maxPage;
@@ -341,7 +369,7 @@ export default class GarageView extends View {
         this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
     }
 
-    static async createCar(body) {
+    static async createCar(body: { name: string; color: string }): Promise<void> {
         const response = await fetch(`${baseUrl}${path.garage}`, {
             method: 'POST',
             headers: {
@@ -353,7 +381,7 @@ export default class GarageView extends View {
         return car;
     }
 
-    static async updateCar(id, name, color) {
+    static async updateCar(id: string, name: string, color: string) {
         const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
             method: 'PUT',
             headers: {
@@ -399,5 +427,17 @@ export default class GarageView extends View {
         });
         const data = await response.json();
         return { data, id };
+    }
+
+    static async createWinner(body: { id: string; wins: number; time: number }): Promise<void> {
+        const response = await fetch(`${baseUrl}${path.winners}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+        const winner = await response.json();
+        return winner;
     }
 }

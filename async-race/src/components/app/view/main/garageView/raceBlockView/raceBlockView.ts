@@ -1,4 +1,4 @@
-import { ParametersElementCreator } from '../../../../../../types/types';
+import { DataGetCars, ParametersElementCreator } from '../../../../../../types/types';
 import ElementCreator from '../../../../../units/elementCreator';
 import View from '../../../view';
 import OneGarageView from './oneGarageView/oneGarageView';
@@ -6,7 +6,7 @@ import OneGarageView from './oneGarageView/oneGarageView';
 export default class RaceBlockView extends View {
     arrElements: HTMLElement[];
 
-    constructor(dataCars: [], countCars: number, currentPage: number) {
+    constructor(dataCars: DataGetCars, countCars: number, currentPage: number) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__race-block', 'race-block'],
@@ -18,7 +18,7 @@ export default class RaceBlockView extends View {
         this.configView(dataCars, countCars, currentPage);
     }
 
-    configView(dataCars: [], countCars: number, currentPage: number): void {
+    configView(dataCars: DataGetCars, countCars: number, currentPage: number): void {
         const parametersRaceBlockTitle: ParametersElementCreator = {
             tag: 'h2',
             tagClasses: ['race-block__title'],

@@ -6,7 +6,7 @@ import WinnersTableHeaderView from '../winnersTableHeader/winnersTableHeaderView
 import OneTablelineView from './oneTableLineView/oneTableLineView';
 
 export default class ResultsBlockView extends View {
-    constructor(dataCars: [], countCars: number, currentPage: number) {
+    constructor(dataWinners: [], countCars: number, currentPage: number) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__results-block', 'results-block'],
@@ -14,10 +14,10 @@ export default class ResultsBlockView extends View {
             callback: null,
         };
         super(parameters);
-        this.configView(dataCars, countCars, currentPage);
+        this.configView(dataWinners, countCars, currentPage);
     }
 
-    configView(dataCars: [], countWinners: number, currentPage: number): void {
+    configView(dataWinners: [], countWinners: number, currentPage: number): void {
         const parametersResultBlockTitle: ParametersElementCreator = {
             tag: 'h2',
             tagClasses: ['results-block__title'],
@@ -36,12 +36,10 @@ export default class ResultsBlockView extends View {
         this.elementCreator?.addInnerElement(resultBlockSubtitle);
         const tableHeader = new WinnersTableHeaderView();
         this.elementCreator?.addInnerElement(tableHeader.getElementCreator());
-        const oneGarage = new OneTablelineView();
-        this.elementCreator?.addInnerElement(oneGarage.getElementCreator());
-        /* dataCars.forEach((dataCar) => {
-            const oneGarage = new OneGarageView(dataCar);
+        dataWinners.forEach((el: Record<string, string>, i: number) => {
+            const oneGarage = new OneTablelineView(i + 1, '#FFFFFF', 'nnnnn', el.wins, el.time);
             this.elementCreator?.addInnerElement(oneGarage.getElementCreator());
-        }); */
+        });
     }
 
     deleteContent(): void {
