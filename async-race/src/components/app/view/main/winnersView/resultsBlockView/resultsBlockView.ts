@@ -7,7 +7,7 @@ import OneTablelineView from './oneTableLineView/oneTableLineView';
 import { baseUrl, path } from '../../../../../../data/data';
 
 export default class ResultsBlockView extends View {
-    constructor(dataWinners: [], countCars: number, currentPage: number) {
+    constructor(dataWinners: [], countCars: number, currentPage: number, winsSort: string, timeSort: string) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__results-block', 'results-block'],
@@ -15,10 +15,16 @@ export default class ResultsBlockView extends View {
             callback: null,
         };
         super(parameters);
-        this.configView(dataWinners, countCars, currentPage);
+        this.configView(dataWinners, countCars, currentPage, winsSort, timeSort);
     }
 
-    configView(dataWinners: WinnerData[], countWinners: number, currentPage: number): void {
+    configView(
+        dataWinners: WinnerData[],
+        countWinners: number,
+        currentPage: number,
+        winsSort: string,
+        timeSort: string
+    ): void {
         const parametersResultBlockTitle: ParametersElementCreator = {
             tag: 'h2',
             tagClasses: ['results-block__title'],
@@ -35,14 +41,20 @@ export default class ResultsBlockView extends View {
         };
         const resultBlockSubtitle = new ElementCreator(parametersResultsBlockSubtitle);
         this.elementCreator?.addInnerElement(resultBlockSubtitle);
-        const tableHeader = new WinnersTableHeaderView();
+        const tableHeader = new WinnersTableHeaderView(winsSort, timeSort);
         this.elementCreator?.addInnerElement(tableHeader.getElementCreator());
         let numberLine = 0;
         dataWinners.forEach(async (el) => {
             const dataOneCar = await ResultsBlockView.getOneCar(el.id);
             numberLine += 1;
-            const oneGarage = new OneTablelineView(numberLine, dataOneCar.color, dataOneCar.name, el.wins, el.time);
-            await this.elementCreator?.addInnerElement(oneGarage.getElementCreator());
+            const oneGarage = await new OneTablelineView(
+                numberLine,
+                await dataOneCar.color,
+                await dataOneCar.name,
+                el.wins,
+                el.time
+            );
+            this.elementCreator?.addInnerElement(await oneGarage.getElementCreator());
         });
     }
 

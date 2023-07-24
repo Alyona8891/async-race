@@ -229,7 +229,6 @@ export default class GarageView extends View {
                             .then((data) => {
                                 const idWinner = data.id;
                                 const winnerTime = data.time;
-                                console.log(winnerTime);
                                 const raceBlockById = document.getElementById(idWinner);
                                 const parent = (raceBlockById as HTMLElement)?.closest('.block-garage');
                                 const winnerName = (parent as unknown as HTMLElement).querySelector('span')

@@ -12,20 +12,77 @@ export default class WinnersView extends View {
 
     resultsBlock!: ResultsBlockView;
 
+    winsSort: string;
+
+    timeSort: string;
+
     constructor() {
         const parameters: ParametersElementCreator = {
             tag: 'section',
             tagClasses: ['page-main__winners-block', 'winners-block'],
             textContent: '',
-            callback: null,
+            callback: {
+                click: async (event: Event): Promise<void | Record<string, string>> => {
+                    const targetElement = event.target;
+                    if ((targetElement as HTMLElement).classList.contains('wins-sort')) {
+                        this.timeSort = 'Best time(seconds)';
+                        if (this.winsSort === 'Wins') {
+                            this.winsSort = '↓ Wins';
+                            this.resultsBlock.deleteContent();
+                            this.createResultsView(this.currentPage, 'wins', 'DESC', this.winsSort, this.timeSort);
+                        } else if (this.winsSort === '↓ Wins') {
+                            this.winsSort = '↑ Wins';
+                            this.resultsBlock.deleteContent();
+                            await this.createResultsView(this.currentPage, 'wins', 'ASC', this.winsSort, this.timeSort);
+                        } else if (this.winsSort === '↑ Wins') {
+                            this.winsSort = '↓ Wins';
+                            this.resultsBlock.deleteContent();
+                            await this.createResultsView(
+                                this.currentPage,
+                                'wins',
+                                'DESC',
+                                this.winsSort,
+                                this.timeSort
+                            );
+                        }
+                    }
+                    if ((targetElement as HTMLElement).classList.contains('time-sort')) {
+                        this.winsSort = 'Wins';
+                        if (this.timeSort === 'Best time(seconds)') {
+                            this.timeSort = '↓ Best time(seconds)';
+                            console.log(this.winsSort, this.timeSort);
+                            this.resultsBlock.deleteContent();
+                            this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
+                        } else if (this.timeSort === '↓ Best time(seconds)') {
+                            this.timeSort = '↑ Best time(seconds)';
+                            console.log(this.winsSort, this.timeSort);
+                            this.resultsBlock.deleteContent();
+                            await this.createResultsView(this.currentPage, 'time', 'ASC', this.winsSort, this.timeSort);
+                        } else if (this.timeSort === '↑ Best time(seconds)') {
+                            this.timeSort = '↓ Best time(seconds)';
+                            console.log(this.winsSort, this.timeSort);
+                            this.resultsBlock.deleteContent();
+                            await this.createResultsView(
+                                this.currentPage,
+                                'time',
+                                'DESC',
+                                this.winsSort,
+                                this.timeSort
+                            );
+                        }
+                    }
+                },
+            },
         };
         super(parameters);
         this.currentPage = 1;
         this.maxPage = 1;
+        this.winsSort = 'Wins';
+        this.timeSort = 'Best time(seconds)';
         this.configView();
     }
 
-    configView(/* dataCars: [], countCars: number, currentPage: number */): void {
+    configView(): void {
         const parametersButtonPrev: ParametersElementCreator = {
             tag: 'button',
             tagClasses: ['garage-block__pagination-prev'],
@@ -35,7 +92,22 @@ export default class WinnersView extends View {
                     if (this.currentPage !== 1) {
                         this.currentPage -= 1;
                         this.resultsBlock.deleteContent();
-                        this.createResultsView(this.currentPage, 'id', 'ASC');
+                        if (this.winsSort === 'Wins' && this.timeSort === 'Best time(seconds)') {
+                            console.log(this.winsSort, this.timeSort);
+                            this.createResultsView(this.currentPage, 'times', 'DESC', this.winsSort, this.timeSort);
+                        } else if (this.winsSort === '↓ Wins') {
+                            console.log(this.winsSort, this.timeSort);
+                            this.createResultsView(this.currentPage, 'wins', 'DESC', this.winsSort, this.timeSort);
+                        } else if (this.winsSort === '↑ Wins') {
+                            console.log(this.winsSort, this.timeSort);
+                            this.createResultsView(this.currentPage, 'wins', 'ASC', this.winsSort, this.timeSort);
+                        } else if (this.timeSort === '↓ Best time(seconds)') {
+                            console.log(this.winsSort, this.timeSort);
+                            this.createResultsView(this.currentPage, 'times', 'DESC', this.winsSort, this.timeSort);
+                        } else if (this.timeSort === '↑ Best time(seconds)') {
+                            console.log(this.winsSort, this.timeSort);
+                            this.createResultsView(this.currentPage, 'times', 'ASC', this.winsSort, this.timeSort);
+                        }
                     }
                 },
             },
@@ -51,14 +123,24 @@ export default class WinnersView extends View {
                     if (this.currentPage !== this.maxPage) {
                         this.currentPage += 1;
                         this.resultsBlock.deleteContent();
-                        this.createResultsView(this.currentPage, 'id', 'ASC');
+                        if (this.winsSort === 'Wins' && this.timeSort === 'Best time(seconds)') {
+                            this.createResultsView(this.currentPage, 'times', 'DESC', this.winsSort, this.timeSort);
+                        } else if (this.winsSort === '↓ Wins') {
+                            this.createResultsView(this.currentPage, 'wins', 'DESC', this.winsSort, this.timeSort);
+                        } else if (this.winsSort === '↑ Wins') {
+                            this.createResultsView(this.currentPage, 'wins', 'ASC', this.winsSort, this.timeSort);
+                        } else if (this.timeSort === '↓ Best time(seconds)') {
+                            this.createResultsView(this.currentPage, 'times', 'DESC', this.winsSort, this.timeSort);
+                        } else if (this.timeSort === '↑ Best time(seconds)') {
+                            this.createResultsView(this.currentPage, 'times', 'ASC', this.winsSort, this.timeSort);
+                        }
                     }
                 },
             },
         };
         const buttonNext = new ElementCreator(parametersButtonNext);
         this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
-        this.createResultsView(this.currentPage, 'id', 'ASC');
+        this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
     }
 
     static async getWinners(currentPage, sortParameter, orderParameter) {
@@ -71,14 +153,14 @@ export default class WinnersView extends View {
         return { data, countWinners, maxPage };
     }
 
-    async createResultsView(currentPage, sortParameter, orderParameter) {
+    async createResultsView(currentPage, sortParameter, orderParameter, winsSort: string, timeSort: string) {
         const parametersRaceBlock = await WinnersView.getWinners(currentPage, sortParameter, orderParameter);
         const data = await parametersRaceBlock.data;
         const countCars = await parametersRaceBlock.countWinners;
         const maxPage = await parametersRaceBlock.maxPage;
         let resultsBlock;
         if (countCars) {
-            resultsBlock = await new ResultsBlockView(data, countCars, currentPage);
+            resultsBlock = await new ResultsBlockView(data, countCars, currentPage, winsSort, timeSort);
             this.resultsBlock = resultsBlock;
             this.maxPage = maxPage;
         }

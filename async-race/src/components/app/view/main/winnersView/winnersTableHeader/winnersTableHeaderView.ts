@@ -4,7 +4,7 @@ import ElementCreator from '../../../../../units/elementCreator';
 import { ParametersElementCreator } from '../../../../../../types/types';
 
 export default class WinnersTableHeaderView extends View {
-    constructor() {
+    constructor(winsSort: string, timeSort: string) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['winners-block__container'],
@@ -12,10 +12,10 @@ export default class WinnersTableHeaderView extends View {
             callback: null,
         };
         super(parameters);
-        this.configView();
+        this.configView(winsSort, timeSort);
     }
 
-    configView(): void {
+    configView(winsSort: string, timeSort: string): void {
         const parametersTableHeaderNumber: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__header-table', 'number'],
@@ -43,7 +43,7 @@ export default class WinnersTableHeaderView extends View {
         const parametersTableHeaderWins: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__header-table', 'wins', 'wins-sort'],
-            textContent: 'Wins',
+            textContent: winsSort,
             callback: null,
         };
         const tableHeaderWins = new ElementCreator(parametersTableHeaderWins);
@@ -51,7 +51,7 @@ export default class WinnersTableHeaderView extends View {
         const parametersTableHeaderTime: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__header-table', 'time', 'time-sort'],
-            textContent: 'Best time(seconds)',
+            textContent: timeSort,
             callback: null,
         };
         const tableHeaderTime = new ElementCreator(parametersTableHeaderTime);

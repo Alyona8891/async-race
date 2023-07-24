@@ -38,6 +38,7 @@ export default class HeaderView extends View {
         const creatorNav = new ElementCreator(parametersNav);
         this.elementCreator?.addInnerElement(creatorNav);
         const garageView = new GarageView();
+        const winnersView = new WinnersView();
         const pagesParameters = [
             {
                 name: NAME_PAGES.garage.toLocaleUpperCase(),
@@ -51,7 +52,49 @@ export default class HeaderView extends View {
                 name: NAME_PAGES.winners.toLocaleUpperCase(),
                 callBack: {
                     click: () => {
-                        mainView.redrawContent(new WinnersView());
+                        winnersView.resultsBlock.deleteContent();
+                        if (winnersView.winsSort === 'Wins' && winnersView.timeSort === 'Best time(seconds)') {
+                            winnersView.createResultsView(
+                                winnersView.currentPage,
+                                'times',
+                                'DESC',
+                                winnersView.winsSort,
+                                winnersView.timeSort
+                            );
+                        } else if (winnersView.winsSort === '↓ Wins') {
+                            winnersView.createResultsView(
+                                winnersView.currentPage,
+                                'wins',
+                                'DESC',
+                                winnersView.winsSort,
+                                winnersView.timeSort
+                            );
+                        } else if (winnersView.winsSort === '↑ Wins') {
+                            winnersView.createResultsView(
+                                winnersView.currentPage,
+                                'wins',
+                                'ASC',
+                                winnersView.winsSort,
+                                winnersView.timeSort
+                            );
+                        } else if (winnersView.timeSort === '↓ Best time(seconds)') {
+                            winnersView.createResultsView(
+                                winnersView.currentPage,
+                                'times',
+                                'DESC',
+                                winnersView.winsSort,
+                                winnersView.timeSort
+                            );
+                        } else if (winnersView.timeSort === '↑ Best time(seconds)') {
+                            winnersView.createResultsView(
+                                winnersView.currentPage,
+                                'times',
+                                'ASC',
+                                winnersView.winsSort,
+                                winnersView.timeSort
+                            );
+                        }
+                        mainView.redrawContent(winnersView);
                     },
                 },
             },
