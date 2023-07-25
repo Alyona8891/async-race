@@ -7,7 +7,7 @@ import OneTablelineView from './oneTableLineView/oneTableLineView';
 import { baseUrl, path } from '../../../../../../data/data';
 
 export default class ResultsBlockView extends View {
-    constructor(dataWinners: [], countCars: number, currentPage: number, winsSort: string, timeSort: string) {
+    constructor(dataWinners: WinnerData[], countCars: number, currentPage: number, winsSort: string, timeSort: string) {
         const parameters: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__results-block', 'results-block'],

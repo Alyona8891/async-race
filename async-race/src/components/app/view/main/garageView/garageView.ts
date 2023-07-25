@@ -6,6 +6,7 @@ import {
     ParametersInputCreator,
     WinnerData,
 } from '../../../../../types/types';
+import clearInputValue from '../../../../functions/clearInputValue';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
 import View from '../../view';
@@ -28,7 +29,8 @@ export default class GarageView extends View {
     updatingCarId: string;
 
     maxPage: number;
-    // timeValues: Record<string, string>[] | unknown[];
+
+    modalWindow!: HTMLElement;
 
     constructor() {
         const parameters: ParametersElementCreator = {
@@ -67,9 +69,16 @@ export default class GarageView extends View {
                             nameCar = parent.querySelector('span')?.innerText;
                         }
                         const inputsArr = document.querySelectorAll('input');
+                        const parentDiv = inputsArr[2].closest('div');
+                        const updateButton = parentDiv?.querySelector('button');
+                        if (updateButton) {
+                            updateButton.disabled = false;
+                        }
+                        inputsArr[2].disabled = false;
                         inputsArr[2].value = nameCar;
                         this.updatingField = nameCar;
                         inputsArr[3].value = svgElementFill;
+                        inputsArr[3].disabled = false;
                         this.updatingFieldColor = svgElementFill;
                         this.updatingCarId = garageBlockId;
                     }
@@ -87,14 +96,14 @@ export default class GarageView extends View {
                         }
                         const parametersMoving = await GarageView.startEngine(garageBlockId, 'started');
                         const time = (await parametersMoving.data.distance) / (await parametersMoving.data.velocity);
-                        const oneStep = time / roadLength;
+                        const oneStep = roadLength / (time / 10);
                         let startPosition = 0;
                         const carAnimation = setInterval(() => {
                             if (startPosition < roadLength) {
-                                startPosition += 2;
+                                startPosition += oneStep;
                                 (svgElement as HTMLElement).style.left = `${startPosition}px`;
                             }
-                        }, oneStep);
+                        }, 10);
                         try {
                             await GarageView.startEngine(garageBlockId, 'drive');
                         } catch {
@@ -134,15 +143,16 @@ export default class GarageView extends View {
         let inputCreator;
         let inputParameters: ParametersInputCreator = {
             tag: 'div',
-            tagClasses: ['garage-block__input-block', 'input-block'],
+            tagClasses: ['garage-block__input-block', 'input-create'],
             textContent: '',
             callback: {
                 keyup: (event) => this.handler(event, 'creatingField'),
                 change: (event) => this.handler(event, 'creatingField'),
-                click: (event) => {
-                    const targetElement = event.target;
+                click: async (event) => {
+                    const targetElement = event.target as HTMLElement;
                     if (targetElement instanceof HTMLButtonElement && this.creatingField) {
-                        GarageView.createCar({ name: this.creatingField, color: this.creatingFieldColor });
+                        clearInputValue(targetElement);
+                        await GarageView.createCar({ name: this.creatingField, color: this.creatingFieldColor });
                         this.raceBlock.deleteContent();
                         this.createGarageView(this.currentPage);
                     }
@@ -154,7 +164,7 @@ export default class GarageView extends View {
         this.elementCreator?.addInnerElement(inputCreator.getCreatedElement());
         inputParameters = {
             tag: 'div',
-            tagClasses: ['garage-block__input-block', 'input-block'],
+            tagClasses: ['garage-block__input-block', 'input-update'],
             textContent: '',
             callback: {
                 keyup: (event) => this.handler(event, 'updatingField'),
@@ -168,6 +178,12 @@ export default class GarageView extends View {
                         const inputsArr = document.querySelectorAll('input');
                         inputsArr[2].value = '';
                         inputsArr[3].value = '#000000';
+                        [targetElement, inputsArr[2], inputsArr[3]].forEach((el) => {
+                            const newEl = el;
+                            if (newEl) {
+                                newEl.disabled = true;
+                            }
+                        });
                     }
                 },
             },
@@ -175,6 +191,14 @@ export default class GarageView extends View {
         };
         inputCreator = new InputCreator(inputParameters);
         this.elementCreator?.addInnerElement(inputCreator.getCreatedElement());
+        inputCreator
+            .getCreatedElement()
+            .querySelectorAll('input')
+            .forEach((el: HTMLInputElement) => {
+                const newEl: HTMLInputElement = el;
+                newEl.disabled = true;
+            });
+        inputCreator.getCreatedElement().querySelector('button').disabled = true;
         const parametersRaceButton: ParametersElementCreator = {
             tag: 'button',
             tagClasses: ['garage-block__button'],
@@ -216,11 +240,12 @@ export default class GarageView extends View {
                                 (values[i] as DataDriveResult).data.distance /
                                 (values[i] as DataDriveResult).data.velocity;
                             const carAnimation = setInterval(() => {
+                                const oneStep = roadLength / (timeEl / 10);
                                 if (startPosition < roadLength) {
-                                    startPosition += 1;
+                                    startPosition += oneStep;
                                     (newEl as HTMLElement).style.left = `${startPosition}px`;
                                 }
-                            }, timeEl / roadLength);
+                            }, 10);
                             try {
                                 const result: DataDriveResult = await GarageView.startEngine(el, 'drive');
                                 result.time = (
@@ -247,10 +272,9 @@ export default class GarageView extends View {
                                     const parent = (raceBlockById as HTMLElement)?.closest('.block-garage');
                                     const winnerName = (parent as unknown as HTMLElement).querySelector('span')
                                         ?.textContent;
-                                    const modalWindow = document.querySelector('.garage-block__modal-window');
-                                    modalWindow?.classList.remove('garage-block__modal-window_unvisible');
-                                    if (modalWindow && modalWindow instanceof HTMLElement) {
-                                        modalWindow.textContent = `${winnerName} went first! Time: ${data.winnerTime}`;
+                                    if (this.modalWindow && this.modalWindow instanceof HTMLElement) {
+                                        this.modalWindow.classList.remove('garage-block__modal-window_unvisible');
+                                        this.modalWindow.textContent = `${winnerName} went first! Time: ${data.winnerTime}`;
                                     }
                                     GarageView.checkWinner(data.idWinner, +data.idWinner, +data.winnerTime);
                                 }
@@ -291,8 +315,7 @@ export default class GarageView extends View {
                             })
                     );
                     Promise.all(requests).then(() => {
-                        const modalWindow = document.querySelector('.garage-block__modal-window');
-                        modalWindow?.classList.add('garage-block__modal-window_unvisible');
+                        this.modalWindow.classList.remove('garage-block__modal-window_unvisible');
                         svgElementsList.forEach(async (el) => {
                             const newEl = el;
                             for (let i = 1; i < 99999; i += 1) {
@@ -332,6 +355,7 @@ export default class GarageView extends View {
             callback: null,
         };
         const modalWindow = new ElementCreator(parametersModalWindow);
+        this.modalWindow = modalWindow.getCreatedElement() as HTMLElement;
         this.elementCreator?.addInnerElement(modalWindow.getCreatedElement());
         const parametersButtonPrev: ParametersElementCreator = {
             tag: 'button',
@@ -388,17 +412,21 @@ export default class GarageView extends View {
     }
 
     async createGarageView(currentPage: number) {
-        const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageViewData;
-        const data = await parametersRaceBlock.data;
-        const countCars = await parametersRaceBlock.countCars;
-        const maxPage = await parametersRaceBlock.maxPage;
-        let raceBlock;
-        if (countCars) {
-            raceBlock = new RaceBlockView(data, countCars, currentPage);
-            this.raceBlock = raceBlock;
-            this.maxPage = maxPage;
+        try {
+            const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageViewData;
+            const data = await parametersRaceBlock.data;
+            const countCars = await parametersRaceBlock.countCars;
+            const maxPage = await parametersRaceBlock.maxPage;
+            let raceBlock;
+            if (countCars) {
+                raceBlock = new RaceBlockView(data, countCars, currentPage);
+                this.raceBlock = raceBlock;
+                this.maxPage = maxPage;
+            }
+            this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
+        } catch (error) {
+            console.log(error);
         }
-        this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
     }
 
     static async createCar(body: { name: string; color: string }): Promise<void> {
@@ -478,8 +506,14 @@ export default class GarageView extends View {
     }
 
     static async getWinner(id: number): Promise<WinnerData> {
-        const response = await fetch(`${baseUrl}${path.winners}/${id}`);
-        const winner = await response.json();
+        let winner;
+        try {
+            const response = await fetch(`${baseUrl}${path.winners}/${id}`);
+            winner = await response.json();
+            return winner;
+        } catch (error) {
+            console.log(error);
+        }
         return winner;
     }
 

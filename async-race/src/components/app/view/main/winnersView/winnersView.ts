@@ -1,5 +1,5 @@
 import './winners.css';
-import { ParametersElementCreator } from '../../../../../types/types';
+import { ParametersElementCreator, WinnersData } from '../../../../../types/types';
 import View from '../../view';
 import ElementCreator from '../../../../units/elementCreator';
 import { baseUrl, path } from '../../../../../data/data';
@@ -143,27 +143,37 @@ export default class WinnersView extends View {
         this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
     }
 
-    static async getWinners(currentPage, sortParameter, orderParameter) {
-        const response = await fetch(
-            `${baseUrl}${path.winners}?_page=${currentPage}&_limit=10&_sort=${sortParameter}&_order=${orderParameter}`
-        );
-        const data = await response.json();
-        const countWinners = Number(await response.headers.get('X-Total-Count'));
-        const maxPage = Math.ceil(countWinners / 10);
-        return { data, countWinners, maxPage };
+    static async getWinners(currentPage: number, sortParameter: string, orderParameter: string): Promise<WinnersData> {
+        let resultData;
+        try {
+            const response = await fetch(
+                `${baseUrl}${path.winners}?_page=${currentPage}&_limit=10&_sort=${sortParameter}&_order=${orderParameter}`
+            );
+            const data = await response.json();
+            const countWinners = Number(await response.headers.get('X-Total-Count'));
+            const maxPage = Math.ceil(countWinners / 10);
+            resultData = { data, countWinners, maxPage };
+        } catch (error) {
+            console.log(error);
+        }
+        return resultData;
     }
 
     async createResultsView(currentPage, sortParameter, orderParameter, winsSort: string, timeSort: string) {
-        const parametersRaceBlock = await WinnersView.getWinners(currentPage, sortParameter, orderParameter);
-        const data = await parametersRaceBlock.data;
-        const countCars = await parametersRaceBlock.countWinners;
-        const maxPage = await parametersRaceBlock.maxPage;
-        let resultsBlock;
-        if (countCars) {
-            resultsBlock = await new ResultsBlockView(data, countCars, currentPage, winsSort, timeSort);
-            this.resultsBlock = resultsBlock;
-            this.maxPage = maxPage;
+        try {
+            const parametersRaceBlock = await WinnersView.getWinners(currentPage, sortParameter, orderParameter);
+            const data = await parametersRaceBlock.data;
+            const countCars = await parametersRaceBlock.countWinners;
+            const maxPage = await parametersRaceBlock.maxPage;
+            let resultsBlock;
+            if (countCars) {
+                resultsBlock = await new ResultsBlockView(data, countCars, currentPage, winsSort, timeSort);
+                this.resultsBlock = resultsBlock;
+                this.maxPage = maxPage;
+            }
+            this.elementCreator?.addInnerElement(await resultsBlock.getElementCreator());
+        } catch (error) {
+            console.log(error);
         }
-        this.elementCreator?.addInnerElement(await resultsBlock.getElementCreator());
     }
 }

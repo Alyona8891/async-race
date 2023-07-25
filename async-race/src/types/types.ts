@@ -57,3 +57,9 @@ export interface GarageViewData {
     countCars: number;
     maxPage: number;
 }
+
+export interface WinnersData {
+    data: WinnerData[];
+    countWinners: number;
+    maxPage: number;
+}

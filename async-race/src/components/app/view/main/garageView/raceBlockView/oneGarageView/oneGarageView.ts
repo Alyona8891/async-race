@@ -70,6 +70,7 @@ export default class OneGarageView extends View {
         };
         const stopButton = new ElementCreator(parametersStopButton);
         roadContainer.addInnerElement(stopButton);
+        stopButton.getCreatedElement()?.setAttribute('disabled', 'true');
         roadContainer
             .getCreatedElement()
             ?.insertAdjacentHTML('beforeend', changeFillSize(carElementString, dataCar.color, 60));

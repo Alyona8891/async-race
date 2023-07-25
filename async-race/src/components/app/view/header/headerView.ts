@@ -52,7 +52,12 @@ export default class HeaderView extends View {
                 name: NAME_PAGES.winners.toLocaleUpperCase(),
                 callBack: {
                     click: () => {
-                        winnersView.resultsBlock.deleteContent();
+                        try {
+                            winnersView.resultsBlock.deleteContent();
+                        } catch (error) {
+                            console.log(error);
+                        }
+
                         if (winnersView.winsSort === 'Wins' && winnersView.timeSort === 'Best time(seconds)') {
                             winnersView.createResultsView(
                                 winnersView.currentPage,
