@@ -22,7 +22,7 @@ export default class RaceBlockView extends View {
         const parametersRaceBlockTitle: ParametersElementCreator = {
             tag: 'h2',
             tagClasses: ['race-block__title'],
-            textContent: `Grage(${countCars})`,
+            textContent: `Garage(${countCars})`,
             callback: null,
         };
         const raceBlockTitle = new ElementCreator(parametersRaceBlockTitle);

@@ -28,8 +28,7 @@ export default class GarageView extends View {
     updatingCarId: string;
 
     maxPage: number;
-
-    timeValues: Record<string, string>[] | unknown[];
+    // timeValues: Record<string, string>[] | unknown[];
 
     constructor() {
         const parameters: ParametersElementCreator = {
@@ -79,19 +78,27 @@ export default class GarageView extends View {
                         const parent = (target as HTMLElement).closest('.block-garage');
                         let garageBlockId;
                         let svgElement;
+                        let roadLength;
                         if (parent) {
                             garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
                             const garageBlock = parent.querySelector('.block-garage__road-container');
                             svgElement = garageBlock?.querySelector('svg');
+                            roadLength = (garageBlock as HTMLElement).offsetWidth - 60;
                         }
                         const parametersMoving = await GarageView.startEngine(garageBlockId, 'started');
-                        const time =
-                            (await parametersMoving.data.distance) / (await parametersMoving.data.velocity) / 1000;
-                        (svgElement as HTMLElement).style.animation = `moving ${await time}s linear forwards`;
+                        const time = (await parametersMoving.data.distance) / (await parametersMoving.data.velocity);
+                        const oneStep = time / roadLength;
+                        let startPosition = 0;
+                        const carAnimation = setInterval(() => {
+                            if (startPosition < roadLength) {
+                                startPosition += 2;
+                                (svgElement as HTMLElement).style.left = `${startPosition}px`;
+                            }
+                        }, oneStep);
                         try {
                             await GarageView.startEngine(garageBlockId, 'drive');
                         } catch {
-                            (svgElement as HTMLElement).style.animationPlayState = 'paused';
+                            clearInterval(carAnimation);
                         }
                     }
                     if ((target as HTMLElement).classList.contains('block-garage__button_stopping')) {
@@ -119,7 +126,7 @@ export default class GarageView extends View {
         this.updatingCarId = '';
         this.currentPage = 1;
         this.maxPage = 1;
-        this.timeValues = [{ string: 'string' }];
+        // this.timeValues = [{ string: 'string' }];
         this.configView();
     }
 
@@ -168,6 +175,7 @@ export default class GarageView extends View {
         };
         inputCreator = new InputCreator(inputParameters);
         this.elementCreator?.addInnerElement(inputCreator.getCreatedElement());
+        let carAnimation;
         const parametersRaceButton: ParametersElementCreator = {
             tag: 'button',
             tagClasses: ['garage-block__button'],
@@ -175,6 +183,7 @@ export default class GarageView extends View {
             callback: {
                 click: async () => {
                     const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
+                    const roadLength = (roadContainerElementsArr[0] as HTMLElement).offsetWidth - 60;
                     const arrElementsId: string[] = [];
                     const svgElementsList = document.querySelectorAll(
                         '.block-garage__road-container > svg'
@@ -201,8 +210,18 @@ export default class GarageView extends View {
                             })
                     );
                     Promise.all(arrPromisesStarted).then(async (values) => {
-                        console.log(values);
                         const requestsResult = arrElementsId.map(async (el, i) => {
+                            let startPosition = 0;
+                            const newEl = svgElementsList[i];
+                            const timeEl =
+                                (values[i] as DataDriveResult).data.distance /
+                                (values[i] as DataDriveResult).data.velocity;
+                            carAnimation = setInterval(() => {
+                                if (startPosition < roadLength) {
+                                    startPosition += 1;
+                                    (newEl as HTMLElement).style.left = `${startPosition}px`;
+                                }
+                            }, timeEl / roadLength);
                             try {
                                 const result: DataDriveResult = await GarageView.startEngine(el, 'drive');
                                 result.time = (
@@ -212,36 +231,28 @@ export default class GarageView extends View {
                                 ).toFixed(2);
                                 return result;
                             } catch (error) {
-                                console.log(999);
-                                svgElementsList[i].style.animationPlayState = 'paused';
+                                clearInterval(carAnimation);
                                 throw error;
                             }
-                        });
-                        svgElementsList.forEach((el, i) => {
-                            const newEl = el;
-                            newEl.style.animation = `moving ${
-                                (values[i] as DataDriveResult).data.distance /
-                                (values[i] as DataDriveResult).data.velocity /
-                                1000
-                            }s linear forwards`;
                         });
                         Promise.any(requestsResult)
                             .then((data) => {
                                 const idWinner = data.id;
                                 const winnerTime = data.time;
-                                const raceBlockById = document.getElementById(idWinner);
-                                const parent = (raceBlockById as HTMLElement)?.closest('.block-garage');
-                                const winnerName = (parent as unknown as HTMLElement).querySelector('span')
-                                    ?.textContent;
-                                const modalWindow = document.querySelector('.garage-block__modal-window');
-                                modalWindow?.classList.remove('garage-block__modal-window_unvisible');
-                                if (modalWindow && modalWindow instanceof HTMLElement) {
-                                    modalWindow.textContent = `${winnerName} went first! Time: ${winnerTime}`;
-                                }
+
                                 return { idWinner: +idWinner, winnerTime };
                             })
                             .then((data) => {
                                 if (data.winnerTime) {
+                                    const raceBlockById = document.getElementById(data.idWinner.toString());
+                                    const parent = (raceBlockById as HTMLElement)?.closest('.block-garage');
+                                    const winnerName = (parent as unknown as HTMLElement).querySelector('span')
+                                        ?.textContent;
+                                    const modalWindow = document.querySelector('.garage-block__modal-window');
+                                    modalWindow?.classList.remove('garage-block__modal-window_unvisible');
+                                    if (modalWindow && modalWindow instanceof HTMLElement) {
+                                        modalWindow.textContent = `${winnerName} went first! Time: ${data.winnerTime}`;
+                                    }
                                     GarageView.checkWinner(data.idWinner, +data.idWinner, +data.winnerTime);
                                 }
                             });
@@ -257,17 +268,39 @@ export default class GarageView extends View {
             textContent: 'RESET',
             callback: {
                 click: () => {
-                    const modalWindow = document.querySelector('.garage-block__modal-window');
-                    modalWindow?.classList.add('garage-block__modal-window_unvisible');
                     const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
                     const arrElementsId: string[] = [];
                     const svgElementsList = document.querySelectorAll(
                         '.block-garage__road-container > svg'
                     ) as unknown as HTMLElement[];
                     roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
-                    arrElementsId.forEach(async (el, i) => {
-                        svgElementsList[i].style.animation = '';
-                        await GarageView.startEngine(el, 'stopped');
+                    const requests = arrElementsId.map(
+                        (el) =>
+                            new Promise((resolve, reject) => {
+                                fetch(`${baseUrl}${path.engine}?id=${el}&status=stopped`, {
+                                    method: 'PATCH',
+                                })
+                                    .then((response) => {
+                                        return response.json();
+                                    })
+                                    .then((data) => {
+                                        resolve(data);
+                                    })
+                                    .catch((error) => {
+                                        reject(error);
+                                    });
+                            })
+                    );
+                    Promise.all(requests).then(() => {
+                        const modalWindow = document.querySelector('.garage-block__modal-window');
+                        modalWindow?.classList.add('garage-block__modal-window_unvisible');
+                        svgElementsList.forEach(async (el) => {
+                            const newEl = el;
+                            for (let i = 1; i < 99999; i += 1) {
+                                clearInterval(i);
+                            }
+                            newEl.style.left = '0px';
+                        });
                     });
                 },
             },
