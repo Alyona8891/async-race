@@ -135,7 +135,6 @@ export default class GarageView extends View {
         this.updatingCarId = '';
         this.currentPage = 1;
         this.maxPage = 1;
-        // this.timeValues = [{ string: 'string' }];
         this.configView();
     }
 
@@ -327,6 +326,8 @@ export default class GarageView extends View {
                 },
             },
         };
+        let buttonPrev;
+        let buttonNext;
         const resetButton = new ElementCreator(parametersResetButton);
         this.elementCreator?.addInnerElement(resetButton.getCreatedElement());
         const parametersGenerateCarsButton: ParametersElementCreator = {
@@ -334,20 +335,60 @@ export default class GarageView extends View {
             tagClasses: ['garage-block__button'],
             textContent: 'GENERATE CARS',
             callback: {
-                click: () => {
+                click: async () => {
                     for (let i = 0; i < 100; i += 1) {
                         const modelCar = GarageView.getRandomNameCar(carBrands, carModels);
                         const colorCar = GarageView.getRandomColor();
                         GarageView.createCar(GarageView.createBody(modelCar, colorCar));
                     }
-                    this.raceBlock.deleteContent();
-                    this.createGarageView(this.currentPage);
+                    await this.raceBlock.deleteContent();
+                    await this.createGarageView(this.currentPage).then(() =>
+                        this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+                    );
                 },
             },
         };
         const generateCarsButton = new ElementCreator(parametersGenerateCarsButton);
         this.elementCreator?.addInnerElement(generateCarsButton.getCreatedElement());
-        this.createGarageView(this.currentPage);
+        const parametersButtonPrev: ParametersElementCreator = {
+            tag: 'button',
+            tagClasses: ['garage-block__pagination-prev'],
+            textContent: 'Prev Page',
+            callback: {
+                click: async () => {
+                    if (this.currentPage !== 1) {
+                        this.currentPage -= 1;
+                        this.raceBlock.deleteContent();
+                        await this.createGarageView(this.currentPage).then(() =>
+                            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+                        );
+                    }
+                },
+            },
+        };
+        buttonPrev = new ElementCreator(parametersButtonPrev);
+        this.elementCreator?.addInnerElement(buttonPrev.getCreatedElement());
+        const parametersButtonNext: ParametersElementCreator = {
+            tag: 'button',
+            tagClasses: ['garage-block__pagination-next'],
+            textContent: 'Next Page',
+            callback: {
+                click: async () => {
+                    if (this.currentPage !== this.maxPage) {
+                        this.currentPage += 1;
+                        this.raceBlock.deleteContent();
+                        await this.createGarageView(this.currentPage).then(() =>
+                            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+                        );
+                    }
+                },
+            },
+        };
+        buttonNext = new ElementCreator(parametersButtonNext);
+        this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
+        this.createGarageView(this.currentPage).then(() =>
+            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+        );
         const parametersModalWindow: ParametersElementCreator = {
             tag: 'div',
             tagClasses: ['garage-block__modal-window', 'garage-block__modal-window_unvisible'],
@@ -357,38 +398,24 @@ export default class GarageView extends View {
         const modalWindow = new ElementCreator(parametersModalWindow);
         this.modalWindow = modalWindow.getCreatedElement() as HTMLElement;
         this.elementCreator?.addInnerElement(modalWindow.getCreatedElement());
-        const parametersButtonPrev: ParametersElementCreator = {
-            tag: 'button',
-            tagClasses: ['garage-block__pagination-prev'],
-            textContent: 'Prev Page',
-            callback: {
-                click: () => {
-                    if (this.currentPage !== 1) {
-                        this.currentPage -= 1;
-                        this.raceBlock.deleteContent();
-                        this.createGarageView(this.currentPage);
-                    }
-                },
-            },
-        };
-        const buttonPrev = new ElementCreator(parametersButtonPrev);
-        this.elementCreator?.addInnerElement(buttonPrev.getCreatedElement());
-        const parametersButtonNext: ParametersElementCreator = {
-            tag: 'button',
-            tagClasses: ['garage-block__pagination-next'],
-            textContent: 'Next Page',
-            callback: {
-                click: () => {
-                    if (this.currentPage !== this.maxPage) {
-                        this.currentPage += 1;
-                        this.raceBlock.deleteContent();
-                        this.createGarageView(this.currentPage);
-                    }
-                },
-            },
-        };
-        const buttonNext = new ElementCreator(parametersButtonNext);
-        this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
+    }
+
+    checkPaginationActive(buttonPrev: ElementCreator, buttonNext: ElementCreator, maxPage, currentPage): void {
+        const buttonPrevElement = buttonPrev.getCreatedElement() as HTMLButtonElement;
+        const buttonNextElement = buttonNext.getCreatedElement() as HTMLButtonElement;
+        if (maxPage === 1) {
+            buttonPrevElement.disabled = true;
+            buttonNextElement.disabled = true;
+        } else if (maxPage > 1 && currentPage === 1) {
+            buttonPrevElement.disabled = true;
+            buttonNextElement.disabled = false;
+        } else if (maxPage > 1 && currentPage === maxPage) {
+            buttonPrevElement.disabled = false;
+            buttonNextElement.disabled = true;
+        } else if (maxPage > 1 && currentPage !== maxPage && currentPage !== 1) {
+            buttonPrevElement.disabled = false;
+            buttonNextElement.disabled = false;
+        }
     }
 
     handler(event: Event, inputField: string): void {

@@ -18,7 +18,7 @@ export default class WinnersTableHeaderView extends View {
     configView(winsSort: string, timeSort: string): void {
         const parametersTableHeaderNumber: ParametersElementCreator = {
             tag: 'div',
-            tagClasses: ['garage-block__header-table', 'number'],
+            tagClasses: ['winners-block__header-table', 'number'],
             textContent: '№',
             callback: null,
         };
@@ -26,7 +26,7 @@ export default class WinnersTableHeaderView extends View {
         this.elementCreator?.addInnerElement(tableHeaderNumber.getCreatedElement());
         const parametersTableHeaderCar: ParametersElementCreator = {
             tag: 'div',
-            tagClasses: ['garage-block__header-table', 'car'],
+            tagClasses: ['winners-block__header-table', 'car'],
             textContent: 'Car',
             callback: null,
         };
@@ -34,7 +34,7 @@ export default class WinnersTableHeaderView extends View {
         this.elementCreator?.addInnerElement(tableHeaderCar.getCreatedElement());
         const parametersTableHeaderName: ParametersElementCreator = {
             tag: 'div',
-            tagClasses: ['garage-block__header-table', 'name'],
+            tagClasses: ['winners-block__header-table', 'name'],
             textContent: 'Name',
             callback: null,
         };
@@ -42,7 +42,7 @@ export default class WinnersTableHeaderView extends View {
         this.elementCreator?.addInnerElement(tableHeaderName.getCreatedElement());
         const parametersTableHeaderWins: ParametersElementCreator = {
             tag: 'div',
-            tagClasses: ['garage-block__header-table', 'wins', 'wins-sort'],
+            tagClasses: ['winners-block__header-table', 'wins', 'wins-sort'],
             textContent: winsSort,
             callback: null,
         };
@@ -50,7 +50,7 @@ export default class WinnersTableHeaderView extends View {
         this.elementCreator?.addInnerElement(tableHeaderWins.getCreatedElement());
         const parametersTableHeaderTime: ParametersElementCreator = {
             tag: 'div',
-            tagClasses: ['garage-block__header-table', 'time', 'time-sort'],
+            tagClasses: ['winners-block__header-table', 'time', 'time-sort'],
             textContent: timeSort,
             callback: null,
         };

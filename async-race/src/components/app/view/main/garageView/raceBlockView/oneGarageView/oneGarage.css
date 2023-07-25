@@ -26,12 +26,7 @@
     left: 0;
 }
 
-
-@keyframes moving {
-    from {
-        left: 0;
-      }
-      to {
-        left: calc(100% - 60px);
-      }
+.block-garage__select-button, .block-garage__delete-button, .block-garage__button_moving, .block-garage__button_stopping  {
+    padding: 2px;
+    margin: 0 5px 3px 0;
 }

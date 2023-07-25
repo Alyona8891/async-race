@@ -1,3 +1,4 @@
+import './input.css';
 import { ParametersInputCreator } from '../../../types/types';
 import ElementCreator from '../elementCreator';
 
