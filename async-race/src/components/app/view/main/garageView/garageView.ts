@@ -175,7 +175,6 @@ export default class GarageView extends View {
         };
         inputCreator = new InputCreator(inputParameters);
         this.elementCreator?.addInnerElement(inputCreator.getCreatedElement());
-        let carAnimation;
         const parametersRaceButton: ParametersElementCreator = {
             tag: 'button',
             tagClasses: ['garage-block__button'],
@@ -216,7 +215,7 @@ export default class GarageView extends View {
                             const timeEl =
                                 (values[i] as DataDriveResult).data.distance /
                                 (values[i] as DataDriveResult).data.velocity;
-                            carAnimation = setInterval(() => {
+                            const carAnimation = setInterval(() => {
                                 if (startPosition < roadLength) {
                                     startPosition += 1;
                                     (newEl as HTMLElement).style.left = `${startPosition}px`;
