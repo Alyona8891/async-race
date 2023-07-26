@@ -1,6 +1,7 @@
 import { baseUrl, carBrands, carModels, path } from '../../../../../data/data';
 import {
     DataDriveResult,
+    DataOneCar,
     GarageViewData,
     ParametersElementCreator,
     ParametersInputCreator,
@@ -290,21 +291,19 @@ export default class GarageView extends View {
                             }
                         });
                         Promise.any(requestsResult)
-                            .then((data) => {
+                            .then(async (data) => {
                                 doElementsDisabled('.reset', false);
                                 const idWinner = data.id;
                                 const winnerTime = data.time;
-                                return { idWinner: +idWinner, winnerTime };
+                                const dataOneCar = await GarageView.getOneCar(idWinner);
+                                console.log({ idWinner: +idWinner, winnerTime, dataOneCar });
+                                return { idWinner: +idWinner, winnerTime, dataOneCar };
                             })
                             .then((data) => {
                                 if (data.winnerTime) {
-                                    const raceBlockById = document.getElementById(data.idWinner.toString());
-                                    const parent = (raceBlockById as HTMLElement)?.closest('.block-garage');
-                                    const winnerName = (parent as unknown as HTMLElement).querySelector('span')
-                                        ?.textContent;
                                     if (this.modalWindow && this.modalWindow instanceof HTMLElement) {
                                         this.modalWindow.classList.remove('garage-block__modal-window_unvisible');
-                                        this.modalWindow.textContent = `${winnerName} went first! Time: ${data.winnerTime}`;
+                                        this.modalWindow.textContent = `${data.dataOneCar.name} went first! Time: ${data.winnerTime}`;
                                     }
                                     GarageView.checkWinner(data.idWinner, +data.idWinner, +data.winnerTime);
                                 }
@@ -456,6 +455,12 @@ export default class GarageView extends View {
         const countCars = Number(await response.headers.get('X-Total-Count'));
         const maxPage = Math.ceil(countCars / 7);
         return { data, countCars, maxPage };
+    }
+
+    static async getOneCar(idCar: string): Promise<DataOneCar> {
+        const response = await fetch(`${baseUrl}${path.garage}/${idCar}`);
+        const data = await response.json();
+        return data;
     }
 
     async createGarageView(currentPage: number) {
