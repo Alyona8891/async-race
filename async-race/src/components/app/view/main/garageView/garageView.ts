@@ -1,5 +1,7 @@
 import { baseUrl, carBrands, carModels, path } from '../../../../../data/data';
 import {
+    BodyRequest,
+    BodyWinnerData,
     DataDrive,
     DataDriveResult,
     DataGetCars,
@@ -10,7 +12,7 @@ import {
     WinnerData,
 } from '../../../../../types/types';
 import clearInputValue from '../../../../functions/clearInputValue';
-import doElementsDisabled from '../../../../functions/changeElementsDisabling';
+import changeElementsDisabling from '../../../../functions/changeElementsDisabling';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
 import View from '../../view';
@@ -91,14 +93,14 @@ export default class GarageView extends View {
                         this.updatingCarId = garageBlockId;
                     }
                     if ((target as HTMLElement).classList.contains('block-garage__button_moving')) {
-                        doElementsDisabled('.garage-block__input-block button', true);
-                        doElementsDisabled('.garage-block > button', true);
-                        doElementsDisabled('.block-garage__select-button', true);
-                        doElementsDisabled('.block-garage__delete-button', true);
-                        doElementsDisabled('.reset', false);
-                        doElementsDisabled('input', true);
-                        doElementsDisabled('.input-update input', true);
-                        doElementsDisabled('.input-update button', true);
+                        changeElementsDisabling('.garage-block__input-block button', true);
+                        changeElementsDisabling('.garage-block > button', true);
+                        changeElementsDisabling('.block-garage__select-button', true);
+                        changeElementsDisabling('.block-garage__delete-button', true);
+                        changeElementsDisabling('.reset', false);
+                        changeElementsDisabling('input', true);
+                        changeElementsDisabling('.input-update input', true);
+                        changeElementsDisabling('.input-update button', true);
                         (target as HTMLElement).setAttribute('disabled', '');
                         const parent = (target as HTMLElement).closest('.block-garage');
                         const stoppingButton = parent?.querySelector('.block-garage__button_stopping');
@@ -136,13 +138,13 @@ export default class GarageView extends View {
                         }
                     }
                     if ((target as HTMLElement).classList.contains('block-garage__button_stopping')) {
-                        doElementsDisabled('.garage-block__input-block button', false);
-                        doElementsDisabled('.garage-block > button', false);
-                        doElementsDisabled('input', false);
-                        doElementsDisabled('.input-update input', false);
-                        doElementsDisabled('.input-update button', false);
-                        doElementsDisabled('.block-garage__select-button', false);
-                        doElementsDisabled('.block-garage__delete-button', false);
+                        changeElementsDisabling('.garage-block__input-block button', false);
+                        changeElementsDisabling('.garage-block > button', false);
+                        changeElementsDisabling('input', false);
+                        changeElementsDisabling('.input-update input', false);
+                        changeElementsDisabling('.input-update button', false);
+                        changeElementsDisabling('.block-garage__select-button', false);
+                        changeElementsDisabling('.block-garage__delete-button', false);
                         (target as HTMLElement).setAttribute('disabled', '');
                         const parent = (target as HTMLElement).closest('.block-garage');
                         const movingButton = parent?.querySelector('.block-garage__button_moving');
@@ -254,9 +256,9 @@ export default class GarageView extends View {
                         const arrPromisesStarted = arrElementsId.map(
                             (el) =>
                                 new Promise((resolve, reject) => {
-                                    doElementsDisabled('button', true);
-                                    doElementsDisabled('.page-header__link', true);
-                                    doElementsDisabled('input', true);
+                                    changeElementsDisabling('button', true);
+                                    changeElementsDisabling('.page-header__link', true);
+                                    changeElementsDisabling('input', true);
                                     fetch(`${baseUrl}${path.engine}?id=${el}&status=started`, {
                                         method: 'PATCH',
                                     })
@@ -264,7 +266,7 @@ export default class GarageView extends View {
                                             return response.json();
                                         })
                                         .then((dataResp) => {
-                                            doElementsDisabled('.page-header__link', false);
+                                            changeElementsDisabling('.page-header__link', false);
                                             return { data: dataResp, id: el };
                                         })
                                         .then((data) => {
@@ -307,7 +309,7 @@ export default class GarageView extends View {
                             });
                             Promise.any(requestsResult)
                                 .then(async (data) => {
-                                    doElementsDisabled('.reset', false);
+                                    changeElementsDisabling('.reset', false);
                                     const idWinner = data.id;
                                     const winnerTime = data.time;
                                     const dataOneCar = await GarageView.getOneCar(idWinner);
@@ -347,8 +349,8 @@ export default class GarageView extends View {
                     const requests = arrElementsId.map(
                         (el) =>
                             new Promise((resolve, reject) => {
-                                doElementsDisabled('button', true);
-                                doElementsDisabled('input', true);
+                                changeElementsDisabling('button', true);
+                                changeElementsDisabling('input', true);
                                 fetch(`${baseUrl}${path.engine}?id=${el}&status=stopped`, {
                                     method: 'PATCH',
                                 })
@@ -364,11 +366,11 @@ export default class GarageView extends View {
                             })
                     );
                     Promise.all(requests).then(() => {
-                        doElementsDisabled('button', false);
-                        doElementsDisabled('input', false);
-                        doElementsDisabled('.block-garage__button_stopping', true);
-                        doElementsDisabled('.input-update input', true);
-                        doElementsDisabled('.input-update button', true);
+                        changeElementsDisabling('button', false);
+                        changeElementsDisabling('input', false);
+                        changeElementsDisabling('.block-garage__button_stopping', true);
+                        changeElementsDisabling('.input-update input', true);
+                        changeElementsDisabling('.input-update button', true);
                         this.checkPaginationActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
                         this.modalWindow.classList.add('garage-block__modal-window_unvisible');
                         svgElementsList.forEach(async (el) => {
@@ -503,17 +505,17 @@ export default class GarageView extends View {
 
     async createGarageView(currentPage: number): Promise<void> {
         try {
-            doElementsDisabled('button', true);
-            doElementsDisabled('input', true);
+            changeElementsDisabling('button', true);
+            changeElementsDisabling('input', true);
             const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageViewData;
             const data = await parametersRaceBlock.data;
             const countCars = await parametersRaceBlock.countCars;
             const maxPage = await parametersRaceBlock.maxPage;
-            doElementsDisabled('button', false);
-            doElementsDisabled('input', false);
-            doElementsDisabled('.block-garage__button_stopping', true);
-            doElementsDisabled('.input-update input', true);
-            doElementsDisabled('.input-update button', true);
+            changeElementsDisabling('button', false);
+            changeElementsDisabling('input', false);
+            changeElementsDisabling('.block-garage__button_stopping', true);
+            changeElementsDisabling('.input-update input', true);
+            changeElementsDisabling('.input-update button', true);
             let raceBlock;
             if (countCars) {
                 raceBlock = new RaceBlockView(data, countCars, currentPage);
@@ -526,7 +528,7 @@ export default class GarageView extends View {
         }
     }
 
-    static async createCar(body: { name: string; color: string }): Promise<DataOneCar> {
+    static async createCar(body: BodyRequest): Promise<DataOneCar> {
         let car;
         try {
             const response = await fetch(`${baseUrl}${path.garage}`, {
@@ -576,7 +578,7 @@ export default class GarageView extends View {
         return carDeleted;
     }
 
-    static getRandomColor() {
+    static getRandomColor(): string {
         const letters = '0123456789ABCDEF';
         let color = '#';
         for (let i = 0; i < 6; i += 1) {
@@ -585,14 +587,14 @@ export default class GarageView extends View {
         return color;
     }
 
-    static getRandomNameCar(arr1, arr2) {
+    static getRandomNameCar(arr1: string[], arr2: string[]): string {
         let nameCar = '';
         nameCar += arr1[Math.floor(Math.random() * 10)];
         nameCar += arr2[Math.floor(Math.random() * 10)];
         return nameCar;
     }
 
-    static createBody(modelCar, colorCar) {
+    static createBody(modelCar, colorCar): BodyRequest {
         return { name: modelCar, color: colorCar };
     }
 
@@ -628,7 +630,7 @@ export default class GarageView extends View {
         return winner;
     }
 
-    static createBodyWinner(idWin: number, winsWin: number, timeWin: number) {
+    static createBodyWinner(idWin: number, winsWin: number, timeWin: number): BodyWinnerData {
         return { id: idWin, wins: winsWin, time: timeWin };
     }
 
@@ -662,7 +664,7 @@ export default class GarageView extends View {
         return updateWinner;
     }
 
-    static async checkWinner(idWin: number, winsWin: number, timeWin: number) {
+    static async checkWinner(idWin: number, winsWin: number, timeWin: number): Promise<void> {
         try {
             const winner = await GarageView.getWinner(idWin);
             if (!winner.id) {

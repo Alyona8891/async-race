@@ -6,6 +6,7 @@ import LinkView from './link/linkView';
 import GarageView from '../main/garageView/garageView';
 import MainView from '../main/mainView';
 import WinnersView from '../main/winnersView/winnersView';
+import changeElementsDisabling from '../../../functions/changeElementsDisabling';
 
 const NAME_PAGES = {
     garage: 'to garage',
@@ -41,17 +42,18 @@ export default class HeaderView extends View {
         const winnersView = new WinnersView();
         const pagesParameters = [
             {
-                name: NAME_PAGES.garage.toLocaleUpperCase(),
+                name: NAME_PAGES.garage.toUpperCase(),
                 callBack: {
-                    click: () => {
+                    click: (): void => {
                         mainView.redrawContent(garageView);
+                        changeElementsDisabling('.reset', false);
                     },
                 },
             },
             {
-                name: NAME_PAGES.winners.toLocaleUpperCase(),
+                name: NAME_PAGES.winners.toUpperCase(),
                 callBack: {
-                    click: () => {
+                    click: (): void => {
                         try {
                             winnersView.resultsBlock.deleteContent();
                         } catch (error) {

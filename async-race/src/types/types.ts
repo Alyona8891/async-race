@@ -75,3 +75,14 @@ export interface WinnersData {
     countWinners: number;
     maxPage: number;
 }
+
+export interface BodyWinnerData {
+    id: number;
+    wins: number;
+    time: number;
+}
+
+export type BodyRequest = {
+    name: string;
+    color: string;
+};

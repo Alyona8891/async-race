@@ -171,7 +171,13 @@ export default class WinnersView extends View {
         return resultData;
     }
 
-    async createResultsView(currentPage, sortParameter, orderParameter, winsSort: string, timeSort: string) {
+    async createResultsView(
+        currentPage,
+        sortParameter,
+        orderParameter,
+        winsSort: string,
+        timeSort: string
+    ): Promise<void> {
         try {
             const parametersRaceBlock = await WinnersView.getWinners(currentPage, sortParameter, orderParameter);
             const data = await parametersRaceBlock.data;
