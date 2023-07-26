@@ -57,7 +57,6 @@ export default class HeaderView extends View {
                         } catch (error) {
                             console.log(error);
                         }
-
                         if (winnersView.winsSort === 'Wins' && winnersView.timeSort === 'Best time(seconds)') {
                             winnersView.createResultsView(
                                 winnersView.currentPage,

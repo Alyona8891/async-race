@@ -66,8 +66,14 @@ export default class ResultsBlockView extends View {
     }
 
     static async getOneCar(id: number): Promise<DataOneCar> {
-        const response = await fetch(`${baseUrl}${path.garage}/${id}`);
-        const data = await response.json();
+        let data;
+        try {
+            const response = await fetch(`${baseUrl}${path.garage}/${id}`);
+            data = await response.json();
+            return data;
+        } catch (error) {
+            console.log(error);
+        }
         return data;
     }
 }

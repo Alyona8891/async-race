@@ -43,10 +43,14 @@ export default class RaceBlockView extends View {
     }
 
     deleteContent(): void {
-        const htmlElement = this.elementCreator?.getCreatedElement();
-        while (htmlElement?.firstElementChild) {
-            htmlElement.firstElementChild.remove();
+        try {
+            const htmlElement = this.elementCreator?.getCreatedElement();
+            while (htmlElement?.firstElementChild) {
+                htmlElement.firstElementChild.remove();
+            }
+            this.arrElements = [];
+        } catch (error) {
+            console.log(error);
         }
-        this.arrElements = [];
     }
 }

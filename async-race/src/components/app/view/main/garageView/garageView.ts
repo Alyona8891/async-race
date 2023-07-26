@@ -1,6 +1,8 @@
 import { baseUrl, carBrands, carModels, path } from '../../../../../data/data';
 import {
+    DataDrive,
     DataDriveResult,
+    DataGetCars,
     DataOneCar,
     GarageViewData,
     ParametersElementCreator,
@@ -232,83 +234,90 @@ export default class GarageView extends View {
             textContent: 'RACE',
             callback: {
                 click: async () => {
-                    const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
-                    const roadLength = (roadContainerElementsArr[0] as HTMLElement).offsetWidth - 60;
-                    const arrElementsId: string[] = [];
-                    const svgElementsList = document.querySelectorAll(
-                        '.block-garage__road-container > svg'
-                    ) as unknown as HTMLElement[];
-                    roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
-                    const arrPromisesStarted = arrElementsId.map(
-                        (el) =>
-                            new Promise((resolve, reject) => {
-                                doElementsDisabled('button', true);
-                                doElementsDisabled('.page-header__link', true);
-                                doElementsDisabled('input', true);
-                                fetch(`${baseUrl}${path.engine}?id=${el}&status=started`, {
-                                    method: 'PATCH',
+                    try {
+                        const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
+                        const roadLength = (roadContainerElementsArr[0] as HTMLElement).offsetWidth - 60;
+                        const arrElementsId: string[] = [];
+                        const svgElementsList = document.querySelectorAll(
+                            '.block-garage__road-container > svg'
+                        ) as unknown as HTMLElement[];
+                        roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
+                        const arrPromisesStarted = arrElementsId.map(
+                            (el) =>
+                                new Promise((resolve, reject) => {
+                                    doElementsDisabled('button', true);
+                                    doElementsDisabled('.page-header__link', true);
+                                    doElementsDisabled('input', true);
+                                    fetch(`${baseUrl}${path.engine}?id=${el}&status=started`, {
+                                        method: 'PATCH',
+                                    })
+                                        .then((response) => {
+                                            return response.json();
+                                        })
+                                        .then((dataResp) => {
+                                            doElementsDisabled('.page-header__link', false);
+                                            return { data: dataResp, id: el };
+                                        })
+                                        .then((data) => {
+                                            resolve(data);
+                                        })
+                                        .catch((error) => {
+                                            reject(error);
+                                        });
                                 })
-                                    .then((response) => {
-                                        return response.json();
-                                    })
-                                    .then((dataResp) => {
-                                        doElementsDisabled('.page-header__link', false);
-                                        return { data: dataResp, id: el };
-                                    })
-                                    .then((data) => {
-                                        resolve(data);
-                                    })
-                                    .catch((error) => {
-                                        reject(error);
-                                    });
-                            })
-                    );
-                    Promise.all(arrPromisesStarted).then(async (values) => {
-                        const requestsResult = arrElementsId.map(async (el, i) => {
-                            let startPosition = 0;
-                            const newEl = svgElementsList[i];
-                            const timeEl =
-                                (values[i] as DataDriveResult).data.distance /
-                                (values[i] as DataDriveResult).data.velocity;
-                            const carAnimation = setInterval(() => {
-                                const oneStep = roadLength / (timeEl / 10);
-                                if (startPosition < roadLength) {
-                                    startPosition += oneStep;
-                                    (newEl as HTMLElement).style.left = `${startPosition}px`;
-                                }
-                            }, 10);
-                            try {
-                                const result: DataDriveResult = await GarageView.startEngine(el, 'drive');
-                                result.time = (
+                        );
+                        Promise.all(arrPromisesStarted).then(async (values) => {
+                            const requestsResult = arrElementsId.map(async (el, i) => {
+                                let startPosition = 0;
+                                const newEl = svgElementsList[i];
+                                const timeEl =
                                     (values[i] as DataDriveResult).data.distance /
-                                    (values[i] as DataDriveResult).data.velocity /
-                                    1000
-                                ).toFixed(2);
-                                return result;
-                            } catch (error) {
-                                clearInterval(carAnimation);
-                                throw error;
-                            }
-                        });
-                        Promise.any(requestsResult)
-                            .then(async (data) => {
-                                doElementsDisabled('.reset', false);
-                                const idWinner = data.id;
-                                const winnerTime = data.time;
-                                const dataOneCar = await GarageView.getOneCar(idWinner);
-                                console.log({ idWinner: +idWinner, winnerTime, dataOneCar });
-                                return { idWinner: +idWinner, winnerTime, dataOneCar };
-                            })
-                            .then((data) => {
-                                if (data.winnerTime) {
-                                    if (this.modalWindow && this.modalWindow instanceof HTMLElement) {
-                                        this.modalWindow.classList.remove('garage-block__modal-window_unvisible');
-                                        this.modalWindow.textContent = `${data.dataOneCar.name} went first! Time: ${data.winnerTime}`;
+                                    (values[i] as DataDriveResult).data.velocity;
+                                const carAnimation = setInterval(() => {
+                                    const oneStep = roadLength / (timeEl / 10);
+                                    if (startPosition < roadLength) {
+                                        startPosition += oneStep;
+                                        (newEl as HTMLElement).style.left = `${startPosition}px`;
                                     }
-                                    GarageView.checkWinner(data.idWinner, +data.idWinner, +data.winnerTime);
+                                }, 10);
+                                try {
+                                    const result: DataDriveResult = (await GarageView.startEngine(
+                                        +el,
+                                        'drive'
+                                    )) as DataDriveResult;
+                                    result.time = (
+                                        (values[i] as DataDriveResult).data.distance /
+                                        (values[i] as DataDriveResult).data.velocity /
+                                        1000
+                                    ).toFixed(2);
+                                    return result;
+                                } catch (error) {
+                                    clearInterval(carAnimation);
+                                    throw error;
                                 }
                             });
-                    });
+                            Promise.any(requestsResult)
+                                .then(async (data) => {
+                                    doElementsDisabled('.reset', false);
+                                    const idWinner = data.id;
+                                    const winnerTime = data.time;
+                                    const dataOneCar = await GarageView.getOneCar(idWinner);
+                                    console.log({ idWinner: +idWinner, winnerTime, dataOneCar });
+                                    return { idWinner: +idWinner, winnerTime, dataOneCar };
+                                })
+                                .then((data) => {
+                                    if (data.winnerTime) {
+                                        if (this.modalWindow && this.modalWindow instanceof HTMLElement) {
+                                            this.modalWindow.classList.remove('garage-block__modal-window_unvisible');
+                                            this.modalWindow.textContent = `${data.dataOneCar.name} went first! Time: ${data.winnerTime}`;
+                                        }
+                                        GarageView.checkWinner(data.idWinner, +data.idWinner, +data.winnerTime);
+                                    }
+                                });
+                        });
+                    } catch (error) {
+                        console.log(error);
+                    }
                 },
             },
         };
@@ -373,15 +382,19 @@ export default class GarageView extends View {
             textContent: 'GENERATE CARS',
             callback: {
                 click: async () => {
-                    for (let i = 0; i < 100; i += 1) {
-                        const modelCar = GarageView.getRandomNameCar(carBrands, carModels);
-                        const colorCar = GarageView.getRandomColor();
-                        GarageView.createCar(GarageView.createBody(modelCar, colorCar));
+                    try {
+                        for (let i = 0; i < 100; i += 1) {
+                            const modelCar = GarageView.getRandomNameCar(carBrands, carModels);
+                            const colorCar = GarageView.getRandomColor();
+                            GarageView.createCar(GarageView.createBody(modelCar, colorCar));
+                        }
+                        await this.raceBlock.deleteContent();
+                        await this.createGarageView(this.currentPage).then(() =>
+                            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+                        );
+                    } catch (error) {
+                        console.log(error);
                     }
-                    await this.raceBlock.deleteContent();
-                    await this.createGarageView(this.currentPage).then(() =>
-                        this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
-                    );
                 },
             },
         };
@@ -449,21 +462,34 @@ export default class GarageView extends View {
         }
     }
 
-    static async getCars(currentPage: number): Promise<object> {
-        const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=7`);
-        const data = await response.json();
-        const countCars = Number(await response.headers.get('X-Total-Count'));
-        const maxPage = Math.ceil(countCars / 7);
-        return { data, countCars, maxPage };
+    static async getCars(currentPage: number): Promise<DataGetCars> {
+        let result;
+        try {
+            const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=7`);
+            const data = await response.json();
+            const countCars = Number(await response.headers.get('X-Total-Count'));
+            const maxPage = Math.ceil(countCars / 7);
+            result = { data, countCars, maxPage };
+            return result;
+        } catch (error) {
+            console.log(error);
+        }
+        return result;
     }
 
     static async getOneCar(idCar: string): Promise<DataOneCar> {
-        const response = await fetch(`${baseUrl}${path.garage}/${idCar}`);
-        const data = await response.json();
+        let data;
+        try {
+            const response = await fetch(`${baseUrl}${path.garage}/${idCar}`);
+            data = await response.json();
+            return data;
+        } catch (error) {
+            console.log(error);
+        }
         return data;
     }
 
-    async createGarageView(currentPage: number) {
+    async createGarageView(currentPage: number): Promise<void> {
         try {
             doElementsDisabled('button', true);
             doElementsDisabled('input', true);
@@ -488,35 +514,53 @@ export default class GarageView extends View {
         }
     }
 
-    static async createCar(body: { name: string; color: string }): Promise<void> {
-        const response = await fetch(`${baseUrl}${path.garage}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
-        const car = await response.json();
+    static async createCar(body: { name: string; color: string }): Promise<DataOneCar> {
+        let car;
+        try {
+            const response = await fetch(`${baseUrl}${path.garage}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+            car = await response.json();
+            return car;
+        } catch (error) {
+            console.log(error);
+        }
         return car;
     }
 
-    static async updateCar(id: string, name: string, color: string) {
-        const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name: `${name}`, color: `${color}` }),
-        });
-        const car = await response.json();
+    static async updateCar(id: string, name: string, color: string): Promise<DataOneCar> {
+        let car;
+        try {
+            const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: `${name}`, color: `${color}` }),
+            });
+            car = await response.json();
+            return car;
+        } catch (error) {
+            console.log(error);
+        }
         return car;
     }
 
-    static async deleteCar(id) {
-        const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
-            method: 'DELETE',
-        });
-        const carDeleted = await response.json();
+    static async deleteCar(id: string): Promise<object> {
+        let carDeleted;
+        try {
+            const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
+                method: 'DELETE',
+            });
+            carDeleted = await response.json();
+            return carDeleted;
+        } catch (error) {
+            console.log(error);
+        }
         return carDeleted;
     }
 
@@ -540,23 +584,35 @@ export default class GarageView extends View {
         return { name: modelCar, color: colorCar };
     }
 
-    static async startEngine(id, status) {
-        const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=${status}`, {
-            method: 'PATCH',
-        });
-        const data = await response.json();
+    static async startEngine(id: number, status: string): Promise<DataDriveResult | { data: DataDrive; id: number }> {
+        let data;
+        try {
+            const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=${status}`, {
+                method: 'PATCH',
+            });
+            data = await response.json();
+            return { data, id };
+        } catch (error) {
+            console.log(error);
+        }
         return { data, id };
     }
 
-    static async createWinner(body: { id: number; wins: number; time: number }): Promise<void> {
-        const response = await fetch(`${baseUrl}${path.winners}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
-        const winner = await response.json();
+    static async createWinner(body: { id: number; wins: number; time: number }): Promise<WinnerData> {
+        let winner;
+        try {
+            const response = await fetch(`${baseUrl}${path.winners}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+            winner = await response.json();
+            return winner;
+        } catch (error) {
+            console.log(error);
+        }
         return winner;
     }
 
@@ -576,15 +632,21 @@ export default class GarageView extends View {
         return winner;
     }
 
-    static async updateWinner(id: number, wins: number, time: number): Promise<void> {
-        const response = await fetch(`${baseUrl}${path.winners}/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ wins: `${wins}`, time: `${time}` }),
-        });
-        const updateWinner = await response.json();
+    static async updateWinner(id: number, wins: number, time: number): Promise<WinnerData> {
+        let updateWinner;
+        try {
+            const response = await fetch(`${baseUrl}${path.winners}/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ wins: `${wins}`, time: `${time}` }),
+            });
+            updateWinner = await response.json();
+            return updateWinner;
+        } catch (error) {
+            console.log(error);
+        }
         return updateWinner;
     }
 

@@ -32,6 +32,13 @@
   font-size: 20px;
 }
 
+@media (max-width: 800px) { 
+  .garage-block__modal-window {
+    right: 2%;
+    font-size: 16px;
+  }
+ }
+
 .garage-block__modal-window_unvisible {
   display: none;
 }

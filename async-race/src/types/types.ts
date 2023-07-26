@@ -35,6 +35,18 @@ export interface DataOneCar {
     id: number;
 }
 
+export interface DataGetCars {
+    data: DataOneCar[];
+    countCars: number;
+    maxPage: number;
+}
+
+export interface DataUpdateCar {
+    data: DataOneCar[];
+    countCars: number;
+    maxPage: number;
+}
+
 export type DataDrive = {
     distance: number;
     velocity: number;
