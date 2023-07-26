@@ -58,45 +58,90 @@ export default class HeaderView extends View {
                             console.log(error);
                         }
                         if (winnersView.winsSort === 'Wins' && winnersView.timeSort === 'Best time(seconds)') {
-                            winnersView.createResultsView(
-                                winnersView.currentPage,
-                                'time',
-                                'DESC',
-                                winnersView.winsSort,
-                                winnersView.timeSort
-                            );
+                            winnersView
+                                .createResultsView(
+                                    winnersView.currentPage,
+                                    'time',
+                                    'DESC',
+                                    winnersView.winsSort,
+                                    winnersView.timeSort
+                                )
+                                .then(() => {
+                                    winnersView.checkPaginationActive(
+                                        winnersView.buttonPrev,
+                                        winnersView.buttonNext,
+                                        winnersView.maxPage,
+                                        winnersView.currentPage
+                                    );
+                                });
                         } else if (winnersView.winsSort === '↓ Wins') {
-                            winnersView.createResultsView(
-                                winnersView.currentPage,
-                                'wins',
-                                'DESC',
-                                winnersView.winsSort,
-                                winnersView.timeSort
-                            );
+                            winnersView
+                                .createResultsView(
+                                    winnersView.currentPage,
+                                    'wins',
+                                    'DESC',
+                                    winnersView.winsSort,
+                                    winnersView.timeSort
+                                )
+                                .then(() => {
+                                    winnersView.checkPaginationActive(
+                                        winnersView.buttonPrev,
+                                        winnersView.buttonNext,
+                                        winnersView.maxPage,
+                                        winnersView.currentPage
+                                    );
+                                });
                         } else if (winnersView.winsSort === '↑ Wins') {
-                            winnersView.createResultsView(
-                                winnersView.currentPage,
-                                'wins',
-                                'ASC',
-                                winnersView.winsSort,
-                                winnersView.timeSort
-                            );
+                            winnersView
+                                .createResultsView(
+                                    winnersView.currentPage,
+                                    'wins',
+                                    'ASC',
+                                    winnersView.winsSort,
+                                    winnersView.timeSort
+                                )
+                                .then(() => {
+                                    winnersView.checkPaginationActive(
+                                        winnersView.buttonPrev,
+                                        winnersView.buttonNext,
+                                        winnersView.maxPage,
+                                        winnersView.currentPage
+                                    );
+                                });
                         } else if (winnersView.timeSort === '↓ Best time(seconds)') {
-                            winnersView.createResultsView(
-                                winnersView.currentPage,
-                                'time',
-                                'DESC',
-                                winnersView.winsSort,
-                                winnersView.timeSort
-                            );
+                            winnersView
+                                .createResultsView(
+                                    winnersView.currentPage,
+                                    'time',
+                                    'DESC',
+                                    winnersView.winsSort,
+                                    winnersView.timeSort
+                                )
+                                .then(() => {
+                                    winnersView.checkPaginationActive(
+                                        winnersView.buttonPrev,
+                                        winnersView.buttonNext,
+                                        winnersView.maxPage,
+                                        winnersView.currentPage
+                                    );
+                                });
                         } else if (winnersView.timeSort === '↑ Best time(seconds)') {
-                            winnersView.createResultsView(
-                                winnersView.currentPage,
-                                'time',
-                                'ASC',
-                                winnersView.winsSort,
-                                winnersView.timeSort
-                            );
+                            winnersView
+                                .createResultsView(
+                                    winnersView.currentPage,
+                                    'time',
+                                    'ASC',
+                                    winnersView.winsSort,
+                                    winnersView.timeSort
+                                )
+                                .then(() => {
+                                    winnersView.checkPaginationActive(
+                                        winnersView.buttonPrev,
+                                        winnersView.buttonNext,
+                                        winnersView.maxPage,
+                                        winnersView.currentPage
+                                    );
+                                });
                         }
                         mainView.redrawContent(winnersView);
                     },

@@ -16,6 +16,10 @@ export default class WinnersView extends View {
 
     timeSort: string;
 
+    buttonNext!: ElementCreator;
+
+    buttonPrev!: ElementCreator;
+
     constructor() {
         const parameters: ParametersElementCreator = {
             tag: 'section',
@@ -116,6 +120,7 @@ export default class WinnersView extends View {
             },
         };
         buttonPrev = new ElementCreator(parametersButtonPrev);
+        this.buttonPrev = buttonPrev;
         this.elementCreator?.addInnerElement(buttonPrev.getCreatedElement());
         const parametersButtonNext: ParametersElementCreator = {
             tag: 'button',
@@ -143,6 +148,7 @@ export default class WinnersView extends View {
             },
         };
         buttonNext = new ElementCreator(parametersButtonNext);
+        this.buttonNext = buttonNext;
         this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
         this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort).then(() =>
             this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)

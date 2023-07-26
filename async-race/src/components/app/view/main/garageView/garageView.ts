@@ -36,6 +36,10 @@ export default class GarageView extends View {
 
     modalWindow!: HTMLElement;
 
+    buttonNext!: ElementCreator;
+
+    buttonPrev!: ElementCreator;
+
     constructor() {
         const parameters: ParametersElementCreator = {
             tag: 'section',
@@ -365,6 +369,7 @@ export default class GarageView extends View {
                         doElementsDisabled('.block-garage__button_stopping', true);
                         doElementsDisabled('.input-update input', true);
                         doElementsDisabled('.input-update button', true);
+                        this.checkPaginationActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
                         this.modalWindow.classList.add('garage-block__modal-window_unvisible');
                         svgElementsList.forEach(async (el) => {
                             const newEl = el;
@@ -422,6 +427,7 @@ export default class GarageView extends View {
             },
         };
         buttonPrev = new ElementCreator(parametersButtonPrev);
+        this.buttonPrev = buttonPrev;
         this.elementCreator?.addInnerElement(buttonPrev.getCreatedElement());
         const parametersButtonNext: ParametersElementCreator = {
             tag: 'button',
@@ -440,6 +446,7 @@ export default class GarageView extends View {
             },
         };
         buttonNext = new ElementCreator(parametersButtonNext);
+        this.buttonNext = buttonNext;
         this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
         this.createGarageView(this.currentPage).then(() =>
             this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
