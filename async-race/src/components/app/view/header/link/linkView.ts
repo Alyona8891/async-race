@@ -6,7 +6,7 @@ export default class LinkView extends View {
 
     constructor(pageParameters: PageParameter, arrLinkElements: LinkView[]) {
         const parameters: ParametersElementCreator = {
-            tag: 'a',
+            tag: 'button',
             tagClasses: ['page-header__link'],
             textContent: pageParameters.name,
             callback: pageParameters.callBack,

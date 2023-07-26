@@ -19,4 +19,22 @@ export default class View {
         const elementCreator: ElementCreator = new ElementCreator(parameters);
         return elementCreator;
     }
+
+    checkPaginationActive(buttonPrev: ElementCreator, buttonNext: ElementCreator, maxPage, currentPage): void {
+        const buttonPrevElement = buttonPrev.getCreatedElement() as HTMLButtonElement;
+        const buttonNextElement = buttonNext.getCreatedElement() as HTMLButtonElement;
+        if (maxPage === 1) {
+            buttonPrevElement.disabled = true;
+            buttonNextElement.disabled = true;
+        } else if (maxPage > 1 && currentPage === 1) {
+            buttonPrevElement.disabled = true;
+            buttonNextElement.disabled = false;
+        } else if (maxPage > 1 && currentPage === maxPage) {
+            buttonPrevElement.disabled = false;
+            buttonNextElement.disabled = true;
+        } else if (maxPage > 1 && currentPage !== maxPage && currentPage !== 1) {
+            buttonPrevElement.disabled = false;
+            buttonNextElement.disabled = false;
+        }
+    }
 }

@@ -61,7 +61,7 @@ export default class HeaderView extends View {
                         if (winnersView.winsSort === 'Wins' && winnersView.timeSort === 'Best time(seconds)') {
                             winnersView.createResultsView(
                                 winnersView.currentPage,
-                                'times',
+                                'time',
                                 'DESC',
                                 winnersView.winsSort,
                                 winnersView.timeSort
@@ -85,7 +85,7 @@ export default class HeaderView extends View {
                         } else if (winnersView.timeSort === '↓ Best time(seconds)') {
                             winnersView.createResultsView(
                                 winnersView.currentPage,
-                                'times',
+                                'time',
                                 'DESC',
                                 winnersView.winsSort,
                                 winnersView.timeSort
@@ -93,7 +93,7 @@ export default class HeaderView extends View {
                         } else if (winnersView.timeSort === '↑ Best time(seconds)') {
                             winnersView.createResultsView(
                                 winnersView.currentPage,
-                                'times',
+                                'time',
                                 'ASC',
                                 winnersView.winsSort,
                                 winnersView.timeSort

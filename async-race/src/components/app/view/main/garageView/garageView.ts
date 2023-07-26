@@ -7,6 +7,7 @@ import {
     WinnerData,
 } from '../../../../../types/types';
 import clearInputValue from '../../../../functions/clearInputValue';
+import doElementsDisabled from '../../../../functions/changeElementsDisabling';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
 import View from '../../view';
@@ -83,14 +84,24 @@ export default class GarageView extends View {
                         this.updatingCarId = garageBlockId;
                     }
                     if ((target as HTMLElement).classList.contains('block-garage__button_moving')) {
+                        doElementsDisabled('.garage-block__input-block button', true);
+                        doElementsDisabled('.garage-block > button', true);
+                        doElementsDisabled('.block-garage__select-button', true);
+                        doElementsDisabled('.block-garage__delete-button', true);
+                        doElementsDisabled('.reset', false);
+                        doElementsDisabled('input', true);
+                        doElementsDisabled('.input-update input', true);
+                        doElementsDisabled('.input-update button', true);
                         (target as HTMLElement).setAttribute('disabled', '');
                         const parent = (target as HTMLElement).closest('.block-garage');
+                        const stoppingButton = parent?.querySelector('.block-garage__button_stopping');
                         let garageBlockId;
                         let svgElement;
                         let roadLength;
-                        if (parent) {
+                        if (parent && stoppingButton instanceof HTMLButtonElement) {
                             garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
                             const garageBlock = parent.querySelector('.block-garage__road-container');
+                            stoppingButton.disabled = false;
                             svgElement = garageBlock?.querySelector('svg');
                             roadLength = (garageBlock as HTMLElement).offsetWidth - 60;
                         }
@@ -104,6 +115,8 @@ export default class GarageView extends View {
                                 (svgElement as HTMLElement).style.left = `${startPosition}px`;
                             }
                         }, 10);
+                        stoppingButton?.setAttribute('name', (carAnimation as unknown as number).toString());
+
                         try {
                             await GarageView.startEngine(garageBlockId, 'drive');
                         } catch {
@@ -111,8 +124,16 @@ export default class GarageView extends View {
                         }
                     }
                     if ((target as HTMLElement).classList.contains('block-garage__button_stopping')) {
+                        doElementsDisabled('.garage-block__input-block button', false);
+                        doElementsDisabled('.garage-block > button', false);
+                        doElementsDisabled('input', false);
+                        doElementsDisabled('.input-update input', false);
+                        doElementsDisabled('.input-update button', false);
+                        doElementsDisabled('.block-garage__select-button', false);
+                        doElementsDisabled('.block-garage__delete-button', false);
                         (target as HTMLElement).setAttribute('disabled', '');
                         const parent = (target as HTMLElement).closest('.block-garage');
+                        const movingButton = parent?.querySelector('.block-garage__button_moving');
                         let garageBlockId;
                         let svgElement;
                         if (parent) {
@@ -120,8 +141,14 @@ export default class GarageView extends View {
                             const garageBlock = parent.querySelector('.block-garage__road-container');
                             svgElement = garageBlock?.querySelector('svg');
                         }
-                        await GarageView.startEngine(garageBlockId, 'stopped');
-                        (svgElement as HTMLElement).style.animation = '';
+                        await GarageView.startEngine(garageBlockId, 'stopped').then(() => {
+                            const intervalId = (target as HTMLElement).getAttribute('name');
+                            if (intervalId) {
+                                clearInterval(+intervalId);
+                            }
+                            svgElement.style.left = '0px';
+                            (movingButton as HTMLButtonElement).disabled = false;
+                        });
                     }
                     return {};
                 },
@@ -214,6 +241,9 @@ export default class GarageView extends View {
                     const arrPromisesStarted = arrElementsId.map(
                         (el) =>
                             new Promise((resolve, reject) => {
+                                doElementsDisabled('button', true);
+                                doElementsDisabled('.page-header__link', true);
+                                doElementsDisabled('input', true);
                                 fetch(`${baseUrl}${path.engine}?id=${el}&status=started`, {
                                     method: 'PATCH',
                                 })
@@ -221,6 +251,7 @@ export default class GarageView extends View {
                                         return response.json();
                                     })
                                     .then((dataResp) => {
+                                        doElementsDisabled('.page-header__link', false);
                                         return { data: dataResp, id: el };
                                     })
                                     .then((data) => {
@@ -260,9 +291,9 @@ export default class GarageView extends View {
                         });
                         Promise.any(requestsResult)
                             .then((data) => {
+                                doElementsDisabled('.reset', false);
                                 const idWinner = data.id;
                                 const winnerTime = data.time;
-
                                 return { idWinner: +idWinner, winnerTime };
                             })
                             .then((data) => {
@@ -286,7 +317,7 @@ export default class GarageView extends View {
         this.elementCreator?.addInnerElement(raceButton.getCreatedElement());
         const parametersResetButton: ParametersElementCreator = {
             tag: 'button',
-            tagClasses: ['garage-block__button'],
+            tagClasses: ['garage-block__button', 'reset'],
             textContent: 'RESET',
             callback: {
                 click: () => {
@@ -299,6 +330,8 @@ export default class GarageView extends View {
                     const requests = arrElementsId.map(
                         (el) =>
                             new Promise((resolve, reject) => {
+                                doElementsDisabled('button', true);
+                                doElementsDisabled('input', true);
                                 fetch(`${baseUrl}${path.engine}?id=${el}&status=stopped`, {
                                     method: 'PATCH',
                                 })
@@ -314,7 +347,12 @@ export default class GarageView extends View {
                             })
                     );
                     Promise.all(requests).then(() => {
-                        this.modalWindow.classList.remove('garage-block__modal-window_unvisible');
+                        doElementsDisabled('button', false);
+                        doElementsDisabled('input', false);
+                        doElementsDisabled('.block-garage__button_stopping', true);
+                        doElementsDisabled('.input-update input', true);
+                        doElementsDisabled('.input-update button', true);
+                        this.modalWindow.classList.add('garage-block__modal-window_unvisible');
                         svgElementsList.forEach(async (el) => {
                             const newEl = el;
                             for (let i = 1; i < 99999; i += 1) {
@@ -400,24 +438,6 @@ export default class GarageView extends View {
         this.elementCreator?.addInnerElement(modalWindow.getCreatedElement());
     }
 
-    checkPaginationActive(buttonPrev: ElementCreator, buttonNext: ElementCreator, maxPage, currentPage): void {
-        const buttonPrevElement = buttonPrev.getCreatedElement() as HTMLButtonElement;
-        const buttonNextElement = buttonNext.getCreatedElement() as HTMLButtonElement;
-        if (maxPage === 1) {
-            buttonPrevElement.disabled = true;
-            buttonNextElement.disabled = true;
-        } else if (maxPage > 1 && currentPage === 1) {
-            buttonPrevElement.disabled = true;
-            buttonNextElement.disabled = false;
-        } else if (maxPage > 1 && currentPage === maxPage) {
-            buttonPrevElement.disabled = false;
-            buttonNextElement.disabled = true;
-        } else if (maxPage > 1 && currentPage !== maxPage && currentPage !== 1) {
-            buttonPrevElement.disabled = false;
-            buttonNextElement.disabled = false;
-        }
-    }
-
     handler(event: Event, inputField: string): void {
         if (event.target instanceof HTMLInputElement && !event.target.hasAttribute('type')) {
             this[inputField] = event.target.value;
@@ -440,10 +460,17 @@ export default class GarageView extends View {
 
     async createGarageView(currentPage: number) {
         try {
+            doElementsDisabled('button', true);
+            doElementsDisabled('input', true);
             const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageViewData;
             const data = await parametersRaceBlock.data;
             const countCars = await parametersRaceBlock.countCars;
             const maxPage = await parametersRaceBlock.maxPage;
+            doElementsDisabled('button', false);
+            doElementsDisabled('input', false);
+            doElementsDisabled('.block-garage__button_stopping', true);
+            doElementsDisabled('.input-update input', true);
+            doElementsDisabled('.input-update button', true);
             let raceBlock;
             if (countCars) {
                 raceBlock = new RaceBlockView(data, countCars, currentPage);
