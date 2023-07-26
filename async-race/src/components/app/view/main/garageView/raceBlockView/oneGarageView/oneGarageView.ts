@@ -18,53 +18,37 @@ export default class OneGarageView extends View {
   }
 
   configView(dataCar: DataOneCar): void {
-    this.createButton('block-garage__select-button', 'Select', this.elementCreator);
-    this.createButton('block-garage__delete-button', 'Delete', this.elementCreator);
-    const parametersNameModeleElement: ParametersElementCreator = {
-      tag: 'span',
-      tagClasses: ['block-garage__name'],
-      textContent: dataCar.name,
-      callback: null,
-    };
-    const nameModeleElement = new ElementCreator(parametersNameModeleElement);
-    this.elementCreator?.addInnerElement(nameModeleElement);
-    const parametersRoadContainer: ParametersElementCreator = {
-      tag: 'div',
-      tagClasses: ['block-garage__road-container'],
-      textContent: '',
-      callback: null,
-    };
-    const roadContainer = new ElementCreator(parametersRoadContainer);
-    this.elementCreator?.addInnerElement(roadContainer);
+    this.createElement('button', ['block-garage__select-button'], 'Select', this.elementCreator);
+    this.createElement('button', ['block-garage__delete-button'], 'Delete', this.elementCreator);
+    this.createElement('span', ['block-garage__name'], dataCar.name, this.elementCreator);
+    const roadContainer = this.createElement('div', ['block-garage__road-container'], '', this.elementCreator);
     const createdRoadContainer = roadContainer?.getCreatedElement();
     if (createdRoadContainer) {
       createdRoadContainer.id = dataCar.id.toString();
     }
-    this.createButton('block-garage__button_moving', 'A', roadContainer);
-    const stopButton = this.createButton('block-garage__button_stopping', 'B', roadContainer);
+    this.createElement('button', ['block-garage__button_moving'], 'A', roadContainer);
+    const stopButton = this.createElement('button', ['block-garage__button_stopping'], 'B', roadContainer);
     stopButton.getCreatedElement()?.setAttribute('disabled', 'true');
     roadContainer
       .getCreatedElement()
       ?.insertAdjacentHTML('beforeend', changeFillSize(carElementString, dataCar.color, 60));
-    const parametersFlagElement: ParametersElementCreator = {
-      tag: 'div',
-      tagClasses: ['block-garage__flag'],
-      textContent: '',
-      callback: null,
-    };
-    const flagElement = new ElementCreator(parametersFlagElement);
-    roadContainer.addInnerElement(flagElement);
+    this.createElement('div', ['block-garage__flag'], '', roadContainer);
   }
 
-  createButton(className: string, text: string, element: ElementCreator | null): ElementCreator {
-    const parametersSelectButton: ParametersElementCreator = {
-      tag: 'button',
-      tagClasses: [className],
+  createElement(
+    tagName: string,
+    classNameArr: string[],
+    text: string,
+    element: ElementCreator | null,
+  ): ElementCreator {
+    const parametersElement: ParametersElementCreator = {
+      tag: tagName,
+      tagClasses: classNameArr,
       textContent: text,
       callback: null,
     };
-    const selectButton = new ElementCreator(parametersSelectButton);
-    element?.addInnerElement(selectButton);
-    return selectButton;
+    const createdElement = new ElementCreator(parametersElement);
+    element?.addInnerElement(createdElement);
+    return createdElement;
   }
 }
