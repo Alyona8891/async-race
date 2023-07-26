@@ -108,7 +108,12 @@ export default class GarageView extends View {
                             svgElement = garageBlock?.querySelector('svg');
                             roadLength = (garageBlock as HTMLElement).offsetWidth - 60;
                         }
-                        const parametersMoving = await GarageView.startEngine(garageBlockId, 'started');
+                        let parametersMoving;
+                        try {
+                            parametersMoving = await GarageView.startEngine(garageBlockId, 'started');
+                        } catch (error) {
+                            console.log(error);
+                        }
                         const time = (await parametersMoving.data.distance) / (await parametersMoving.data.velocity);
                         const oneStep = roadLength / (time / 10);
                         let startPosition = 0;
@@ -585,17 +590,17 @@ export default class GarageView extends View {
     }
 
     static async startEngine(id: number, status: string): Promise<DataDriveResult | { data: DataDrive; id: number }> {
-        let data;
-        try {
-            const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=${status}`, {
-                method: 'PATCH',
-            });
-            data = await response.json();
-            return { data, id };
-        } catch (error) {
+        /* let data;
+        try { */
+        const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=${status}`, {
+            method: 'PATCH',
+        });
+        const data = await response.json();
+        return { data, id };
+        /* } catch (error) {
             console.log(error);
         }
-        return { data, id };
+        return { data, id }; */
     }
 
     static async createWinner(body: { id: number; wins: number; time: number }): Promise<WinnerData> {
