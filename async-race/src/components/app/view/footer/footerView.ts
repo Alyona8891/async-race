@@ -1,6 +1,5 @@
 import './footer.css';
 import { ParametersElementCreator } from '../../../../types/types';
-// import ElementCreator from '../../../units/elementCreator';
 import View from '../view';
 
 const INNER_BLOCK_INFO = `
@@ -14,24 +13,24 @@ const INNER_BLOCK_INFO = `
 </div>`;
 
 export default class FooterView extends View {
-    constructor() {
-        const parameters: ParametersElementCreator = {
-            tag: 'footer',
-            tagClasses: ['page__page-footer', 'page-footer'],
-            textContent: '',
-            callback: null,
-        };
-        super(parameters);
-        this.configView();
-    }
+  constructor() {
+    const parameters: ParametersElementCreator = {
+      tag: 'footer',
+      tagClasses: ['page__page-footer', 'page-footer'],
+      textContent: '',
+      callback: null,
+    };
+    super(parameters);
+    this.configView();
+  }
 
-    configView(): void {
-        let createdElement: HTMLElement | Element | undefined;
-        if (this.elementCreator) {
-            createdElement = this.elementCreator.getCreatedElement();
-        }
-        if (createdElement) {
-            createdElement.innerHTML = INNER_BLOCK_INFO;
-        }
+  configView(): void {
+    let createdElement: HTMLElement | Element | undefined;
+    if (this.elementCreator) {
+      createdElement = this.elementCreator.getCreatedElement();
     }
+    if (createdElement) {
+      createdElement.innerHTML = INNER_BLOCK_INFO;
+    }
+  }
 }

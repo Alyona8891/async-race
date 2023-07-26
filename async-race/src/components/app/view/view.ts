@@ -20,7 +20,7 @@ export default class View {
         return elementCreator;
     }
 
-    checkPaginationActive(buttonPrev: ElementCreator, buttonNext: ElementCreator, maxPage, currentPage): void {
+    checkStatusActive(buttonPrev: ElementCreator, buttonNext: ElementCreator, maxPage, currentPage): void {
         const buttonPrevElement = buttonPrev.getCreatedElement() as HTMLButtonElement;
         const buttonNextElement = buttonNext.getCreatedElement() as HTMLButtonElement;
         if (maxPage === 1) {

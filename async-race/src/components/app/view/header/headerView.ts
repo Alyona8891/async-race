@@ -7,157 +7,82 @@ import GarageView from '../main/garageView/garageView';
 import MainView from '../main/mainView';
 import WinnersView from '../main/winnersView/winnersView';
 import changeElementsDisabling from '../../../functions/changeElementsDisabling';
+import definePaginationActivity from '../../../functions/definePaginationActivity';
 
 const NAME_PAGES = {
-    garage: 'to garage',
-    winners: 'to winners',
+  garage: 'to garage',
+  winners: 'to winners',
 };
 const INDEX_START_PAGE = 0;
 
 export default class HeaderView extends View {
-    arrLinkElements: LinkView[];
+  arrLinkElements: LinkView[];
 
-    constructor(mainView: MainView) {
-        const parameters: ParametersElementCreator = {
-            tag: 'header',
-            tagClasses: ['page__page-header', 'page-header'],
-            textContent: '',
-            callback: null,
-        };
-        super(parameters);
-        this.arrLinkElements = [];
-        this.configView(mainView);
-    }
+  constructor(mainView: MainView) {
+    const parameters: ParametersElementCreator = {
+      tag: 'header',
+      tagClasses: ['page__page-header', 'page-header'],
+      textContent: '',
+      callback: null,
+    };
+    super(parameters);
+    this.arrLinkElements = [];
+    this.configView(mainView);
+  }
 
-    configView(mainView: MainView): void {
-        const parametersNav: ParametersElementCreator = {
-            tag: 'nav',
-            tagClasses: ['page-header__nav'],
-            textContent: '',
-            callback: null,
-        };
-        const creatorNav = new ElementCreator(parametersNav);
-        this.elementCreator?.addInnerElement(creatorNav);
-        const garageView = new GarageView();
-        const winnersView = new WinnersView();
-        const pagesParameters = [
-            {
-                name: NAME_PAGES.garage.toUpperCase(),
-                callBack: {
-                    click: (): void => {
-                        mainView.redrawContent(garageView);
-                        changeElementsDisabling('.reset', false);
-                    },
-                },
-            },
-            {
-                name: NAME_PAGES.winners.toUpperCase(),
-                callBack: {
-                    click: (): void => {
-                        try {
-                            winnersView.resultsBlock.deleteContent();
-                        } catch (error) {
-                            console.log(error);
-                        }
-                        if (winnersView.winsSort === 'Wins' && winnersView.timeSort === 'Best time(seconds)') {
-                            winnersView
-                                .createResultsView(
-                                    winnersView.currentPage,
-                                    'time',
-                                    'DESC',
-                                    winnersView.winsSort,
-                                    winnersView.timeSort
-                                )
-                                .then(() => {
-                                    winnersView.checkPaginationActive(
-                                        winnersView.buttonPrev,
-                                        winnersView.buttonNext,
-                                        winnersView.maxPage,
-                                        winnersView.currentPage
-                                    );
-                                });
-                        } else if (winnersView.winsSort === '↓ Wins') {
-                            winnersView
-                                .createResultsView(
-                                    winnersView.currentPage,
-                                    'wins',
-                                    'DESC',
-                                    winnersView.winsSort,
-                                    winnersView.timeSort
-                                )
-                                .then(() => {
-                                    winnersView.checkPaginationActive(
-                                        winnersView.buttonPrev,
-                                        winnersView.buttonNext,
-                                        winnersView.maxPage,
-                                        winnersView.currentPage
-                                    );
-                                });
-                        } else if (winnersView.winsSort === '↑ Wins') {
-                            winnersView
-                                .createResultsView(
-                                    winnersView.currentPage,
-                                    'wins',
-                                    'ASC',
-                                    winnersView.winsSort,
-                                    winnersView.timeSort
-                                )
-                                .then(() => {
-                                    winnersView.checkPaginationActive(
-                                        winnersView.buttonPrev,
-                                        winnersView.buttonNext,
-                                        winnersView.maxPage,
-                                        winnersView.currentPage
-                                    );
-                                });
-                        } else if (winnersView.timeSort === '↓ Best time(seconds)') {
-                            winnersView
-                                .createResultsView(
-                                    winnersView.currentPage,
-                                    'time',
-                                    'DESC',
-                                    winnersView.winsSort,
-                                    winnersView.timeSort
-                                )
-                                .then(() => {
-                                    winnersView.checkPaginationActive(
-                                        winnersView.buttonPrev,
-                                        winnersView.buttonNext,
-                                        winnersView.maxPage,
-                                        winnersView.currentPage
-                                    );
-                                });
-                        } else if (winnersView.timeSort === '↑ Best time(seconds)') {
-                            winnersView
-                                .createResultsView(
-                                    winnersView.currentPage,
-                                    'time',
-                                    'ASC',
-                                    winnersView.winsSort,
-                                    winnersView.timeSort
-                                )
-                                .then(() => {
-                                    winnersView.checkPaginationActive(
-                                        winnersView.buttonPrev,
-                                        winnersView.buttonNext,
-                                        winnersView.maxPage,
-                                        winnersView.currentPage
-                                    );
-                                });
-                        }
-                        mainView.redrawContent(winnersView);
-                    },
-                },
-            },
-        ];
-        pagesParameters.forEach((el, index) => {
-            const linkView = new LinkView(el, this.arrLinkElements);
-            this.arrLinkElements.push(linkView);
-            if (index === INDEX_START_PAGE) {
-                el.callBack.click();
-                linkView.setSelectedLink();
+  configView(mainView: MainView): void {
+    const creatorNav = this.createNavElement();
+    const garageView = new GarageView();
+    const winnersView = new WinnersView();
+    this.createLinkElements(mainView, garageView, winnersView, creatorNav);
+  }
+
+  createNavElement(): ElementCreator {
+    const parametersNav: ParametersElementCreator = {
+      tag: 'nav',
+      tagClasses: ['page-header__nav'],
+      textContent: '',
+      callback: null,
+    };
+    const creatorNav = new ElementCreator(parametersNav);
+    this.elementCreator?.addInnerElement(creatorNav);
+    return creatorNav;
+  }
+
+  createLinkElements(mainView, garageView, winnersView, creatorNav): void {
+    const pagesParameters = [
+      {
+        name: NAME_PAGES.garage.toUpperCase(),
+        callBack: {
+          click: (): void => {
+            mainView.redrawContent(garageView);
+            changeElementsDisabling('.reset', false);
+          },
+        },
+      },
+      {
+        name: NAME_PAGES.winners.toUpperCase(),
+        callBack: {
+          click: (): void => {
+            try {
+              winnersView.resultsBlock.deleteContent();
+            } catch (error) {
+              console.log(error);
             }
-            creatorNav.addInnerElement(linkView.getElementCreator());
-        });
-    }
+            definePaginationActivity(winnersView);
+            mainView.redrawContent(winnersView);
+          },
+        },
+      },
+    ];
+    pagesParameters.forEach((el, index) => {
+      const linkView = new LinkView(el, this.arrLinkElements);
+      this.arrLinkElements.push(linkView);
+      if (index === INDEX_START_PAGE) {
+        el.callBack.click();
+        linkView.setSelectedLink();
+      }
+      creatorNav.addInnerElement(linkView.getElementCreator());
+    });
+  }
 }

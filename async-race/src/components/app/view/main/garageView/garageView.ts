@@ -371,7 +371,7 @@ export default class GarageView extends View {
                         changeElementsDisabling('.block-garage__button_stopping', true);
                         changeElementsDisabling('.input-update input', true);
                         changeElementsDisabling('.input-update button', true);
-                        this.checkPaginationActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
+                        this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
                         this.modalWindow.classList.add('garage-block__modal-window_unvisible');
                         svgElementsList.forEach(async (el) => {
                             const newEl = el;
@@ -402,7 +402,7 @@ export default class GarageView extends View {
                         }
                         await this.raceBlock.deleteContent();
                         await this.createGarageView(this.currentPage).then(() =>
-                            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+                            this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
                         );
                     } catch (error) {
                         console.log(error);
@@ -422,7 +422,7 @@ export default class GarageView extends View {
                         this.currentPage -= 1;
                         this.raceBlock.deleteContent();
                         await this.createGarageView(this.currentPage).then(() =>
-                            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+                            this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
                         );
                     }
                 },
@@ -441,7 +441,7 @@ export default class GarageView extends View {
                         this.currentPage += 1;
                         this.raceBlock.deleteContent();
                         await this.createGarageView(this.currentPage).then(() =>
-                            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+                            this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
                         );
                     }
                 },
@@ -451,7 +451,7 @@ export default class GarageView extends View {
         this.buttonNext = buttonNext;
         this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
         this.createGarageView(this.currentPage).then(() =>
-            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+            this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
         );
         const parametersModalWindow: ParametersElementCreator = {
             tag: 'div',

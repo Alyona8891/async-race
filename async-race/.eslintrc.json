@@ -6,9 +6,7 @@
     "extends": [
         "airbnb-base",
         "airbnb-typescript/base",
-        "plugin:@typescript-eslint/recommended",
-        "prettier",
-        "plugin:prettier/recommended"
+        "plugin:@typescript-eslint/recommended"
     ],
     "overrides": [
     ],
@@ -25,9 +23,9 @@
         "no-debugger": "off",
         "no-console": 0,
         "class-methods-use-this": "off",
-        "prettier/prettier": "error",
+        // "prettier/prettier": "error",
         "@typescript-eslint/explicit-function-return-type": "error",
-        "@typescript-eslint/no-explicit-any": "error"
-        // "max-lines-per-function": ["error", 40]
+        "@typescript-eslint/no-explicit-any": "error",
+        "max-lines-per-function": ["error", 40]
     }
 }

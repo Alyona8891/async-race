@@ -99,22 +99,17 @@ export default class WinnersView extends View {
                         this.currentPage -= 1;
                         this.resultsBlock.deleteContent();
                         if (this.winsSort === 'Wins' && this.timeSort === 'Best time(seconds)') {
-                            console.log(this.winsSort, this.timeSort);
                             this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
                         } else if (this.winsSort === '↓ Wins') {
-                            console.log(this.winsSort, this.timeSort);
                             this.createResultsView(this.currentPage, 'wins', 'DESC', this.winsSort, this.timeSort);
                         } else if (this.winsSort === '↑ Wins') {
-                            console.log(this.winsSort, this.timeSort);
                             this.createResultsView(this.currentPage, 'wins', 'ASC', this.winsSort, this.timeSort);
                         } else if (this.timeSort === '↓ Best time(seconds)') {
-                            console.log(this.winsSort, this.timeSort);
                             this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
                         } else if (this.timeSort === '↑ Best time(seconds)') {
-                            console.log(this.winsSort, this.timeSort);
                             this.createResultsView(this.currentPage, 'time', 'ASC', this.winsSort, this.timeSort);
                         }
-                        this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
+                        this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
                     }
                 },
             },
@@ -142,7 +137,7 @@ export default class WinnersView extends View {
                         } else if (this.timeSort === '↑ Best time(seconds)') {
                             this.createResultsView(this.currentPage, 'time', 'ASC', this.winsSort, this.timeSort);
                         }
-                        this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
+                        this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
                     }
                 },
             },
@@ -151,7 +146,7 @@ export default class WinnersView extends View {
         this.buttonNext = buttonNext;
         this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
         this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort).then(() =>
-            this.checkPaginationActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
+            this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage)
         );
     }
 
