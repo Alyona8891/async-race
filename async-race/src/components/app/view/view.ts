@@ -29,15 +29,19 @@ export default class View {
     const buttonPrevElement = buttonPrev.getCreatedElement() as HTMLButtonElement;
     const buttonNextElement = buttonNext.getCreatedElement() as HTMLButtonElement;
     if (maxPage === 1) {
+      console.log(3);
       buttonPrevElement.disabled = true;
       buttonNextElement.disabled = true;
     } else if (maxPage > 1 && currentPage === 1) {
+      console.log(2);
       buttonPrevElement.disabled = true;
       buttonNextElement.disabled = false;
     } else if (maxPage > 1 && currentPage === maxPage) {
+      console.log(4);
       buttonPrevElement.disabled = false;
       buttonNextElement.disabled = true;
     } else if (maxPage > 1 && currentPage !== maxPage && currentPage !== 1) {
+      console.log(5);
       buttonPrevElement.disabled = false;
       buttonNextElement.disabled = false;
     }

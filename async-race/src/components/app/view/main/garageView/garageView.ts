@@ -58,10 +58,14 @@ export default class GarageView extends View {
             if (parent) {
               garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
             }
-            GarageView.deleteCar(garageBlockId);
-            GarageView.deleteWinner(garageBlockId);
-            this.raceBlock.deleteContent();
-            this.createGarageView(this.currentPage);
+            GarageView.deleteCar(garageBlockId)
+              .then(() => {
+                GarageView.deleteWinner(garageBlockId);
+              }).then(() => {
+                this.raceBlock.deleteContent();
+              }).then(() => {
+                this.createGarageView(this.currentPage);
+              });
           }
           if ((target as HTMLElement).classList.contains('block-garage__select-button')) {
             const parent = (target as HTMLElement).closest('.block-garage');
@@ -511,6 +515,7 @@ export default class GarageView extends View {
         this.maxPage = maxPage;
       }
       this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
+      this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
     } catch (error) {
       console.log(error);
     }
