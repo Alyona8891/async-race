@@ -198,11 +198,13 @@ export default class GarageView extends View {
         click: async (event) => {
           const targetElement = event.target as HTMLElement;
           if (targetElement instanceof HTMLButtonElement && this.creatingField) {
-            clearInputValue(targetElement);
             GarageView.createCar({ name: this.creatingField, color: this.creatingFieldColor })
               .then(() => {
                 this.raceBlock.deleteContent();
                 this.createGarageView(this.currentPage);
+              }).then(() => {
+                this.creatingField = '';
+                clearInputValue(targetElement);
               });
           }
         },
