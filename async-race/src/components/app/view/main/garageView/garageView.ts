@@ -399,8 +399,10 @@ export default class GarageView extends View {
       tagClasses: ['garage-block__button'],
       textContent: 'GENERATE CARS',
       callback: {
-        click: async () => {
+        click: async (event) => {
           try {
+            const targetElement = event.target as HTMLButtonElement;
+            targetElement.disabled = true;
             this.raceBlock.deleteContent();
             const arr = new Array(100).fill(1);
             const requestsResult = arr.map(async () => {
@@ -410,7 +412,8 @@ export default class GarageView extends View {
             });
             await Promise.all(requestsResult);
             await this.createGarageView(this.currentPage);
-            await this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
+            targetElement.disabled = false;
+            this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
           } catch (error) {
             console.log(error);
           }
