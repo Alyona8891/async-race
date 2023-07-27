@@ -401,13 +401,16 @@ export default class GarageView extends View {
       callback: {
         click: async () => {
           try {
-            for (let i = 0; i < 100; i += 1) {
+            this.raceBlock.deleteContent();
+            const arr = new Array(100).fill(1);
+            const requestsResult = arr.map(async () => {
               const modelCar = GarageView.getRandomNameCar(carBrands, carModels);
               const colorCar = GarageView.getRandomColor();
-              GarageView.createCar(GarageView.createBody(modelCar, colorCar));
-            }
-            await this.raceBlock.deleteContent();
-            await this.createGarageView(this.currentPage).then(() => this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage));
+              await GarageView.createCar(GarageView.createBody(modelCar, colorCar));
+            });
+            await Promise.all(requestsResult);
+            await this.createGarageView(this.currentPage);
+            await this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
           } catch (error) {
             console.log(error);
           }
