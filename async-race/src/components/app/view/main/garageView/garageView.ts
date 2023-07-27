@@ -199,9 +199,11 @@ export default class GarageView extends View {
           const targetElement = event.target as HTMLElement;
           if (targetElement instanceof HTMLButtonElement && this.creatingField) {
             clearInputValue(targetElement);
-            await GarageView.createCar({ name: this.creatingField, color: this.creatingFieldColor });
-            this.raceBlock.deleteContent();
-            this.createGarageView(this.currentPage);
+            GarageView.createCar({ name: this.creatingField, color: this.creatingFieldColor })
+              .then(() => {
+                this.raceBlock.deleteContent();
+                this.createGarageView(this.currentPage);
+              });
           }
         },
       },
@@ -219,9 +221,11 @@ export default class GarageView extends View {
         click: (event): void => {
           const targetElement = event.target;
           if (targetElement instanceof HTMLButtonElement) {
-            GarageView.updateCar(this.updatingCarId, this.updatingField, this.updatingFieldColor);
-            this.raceBlock.deleteContent();
-            this.createGarageView(this.currentPage);
+            GarageView.updateCar(this.updatingCarId, this.updatingField, this.updatingFieldColor)
+              .then(() => {
+                this.raceBlock.deleteContent();
+                this.createGarageView(this.currentPage);
+              });
             const inputsArr = document.querySelectorAll('input');
             inputsArr[2].value = '';
             inputsArr[3].value = '#000000';
