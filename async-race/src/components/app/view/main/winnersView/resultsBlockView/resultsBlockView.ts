@@ -1,7 +1,6 @@
 import './resultsBlock.css';
 import View from '../../../view';
 import { DataOneCar, ParametersElementCreator, ParametersResultBlock } from '../../../../../../types/types';
-import ElementCreator from '../../../../../units/elementCreator';
 import WinnersTableHeaderView from '../winnersTableHeader/winnersTableHeaderView';
 import OneTablelineView from './oneTableLineView/oneTableLineView';
 import { baseUrl, path } from '../../../../../../data/data';
@@ -31,22 +30,8 @@ export default class ResultsBlockView extends View {
     winsSort: string,
     timeSort: string,
   ): void {
-    const parametersResultBlockTitle: ParametersElementCreator = {
-      tag: 'h2',
-      tagClasses: ['results-block__title'],
-      textContent: `Winners(${countWinners})`,
-      callback: null,
-    };
-    const resultsBlockTitle = new ElementCreator(parametersResultBlockTitle);
-    this.elementCreator?.addInnerElement(resultsBlockTitle);
-    const parametersResultsBlockSubtitle: ParametersElementCreator = {
-      tag: 'h3',
-      tagClasses: ['results-block__subtitle'],
-      textContent: `Page #${currentPage}`,
-      callback: null,
-    };
-    const resultBlockSubtitle = new ElementCreator(parametersResultsBlockSubtitle);
-    this.elementCreator?.addInnerElement(resultBlockSubtitle);
+    this.addCreatedElement('h2', ['results-block__title'], `Winners(${countWinners})`, this.elementCreator);
+    this.addCreatedElement('h3', ['results-block__subtitle'], `Page #${currentPage}`, this.elementCreator);
     const tableHeader = new WinnersTableHeaderView(winsSort, timeSort);
     this.elementCreator?.addInnerElement(tableHeader.getElementCreator());
     let numberLine = 0;
@@ -59,7 +44,8 @@ export default class ResultsBlockView extends View {
         el.winsWinner,
         el.timeWinner,
       );
-      this.elementCreator?.addInnerElement(oneGarage.getElementCreator());
+      const oneGarageElement = oneGarage.getElementCreator();
+      this.elementCreator?.addInnerElement(oneGarageElement);
     });
   }
 
