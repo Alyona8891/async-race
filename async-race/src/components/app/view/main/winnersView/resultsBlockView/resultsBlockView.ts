@@ -1,13 +1,19 @@
 import './resultsBlock.css';
 import View from '../../../view';
-import { DataOneCar, ParametersElementCreator, WinnerData } from '../../../../../../types/types';
+import { DataOneCar, ParametersElementCreator, ParametersResultBlock } from '../../../../../../types/types';
 import ElementCreator from '../../../../../units/elementCreator';
 import WinnersTableHeaderView from '../winnersTableHeader/winnersTableHeaderView';
 import OneTablelineView from './oneTableLineView/oneTableLineView';
 import { baseUrl, path } from '../../../../../../data/data';
 
 export default class ResultsBlockView extends View {
-  constructor(dataWinners: WinnerData[], countCars: number, currentPage: number, winsSort: string, timeSort: string) {
+  constructor(
+    dataWinners: ParametersResultBlock[],
+    countCars: number,
+    currentPage: number,
+    winsSort: string,
+    timeSort: string,
+  ) {
     const parameters: ParametersElementCreator = {
       tag: 'div',
       tagClasses: ['garage-block__results-block', 'results-block'],
@@ -19,7 +25,7 @@ export default class ResultsBlockView extends View {
   }
 
   configView(
-    dataWinners: WinnerData[],
+    dataWinners: ParametersResultBlock[],
     countWinners: number,
     currentPage: number,
     winsSort: string,
@@ -45,16 +51,15 @@ export default class ResultsBlockView extends View {
     this.elementCreator?.addInnerElement(tableHeader.getElementCreator());
     let numberLine = 0;
     dataWinners.forEach(async (el) => {
-      const dataOneCar = await ResultsBlockView.getOneCar(el.id);
       numberLine += 1;
-      const oneGarage = await new OneTablelineView(
+      const oneGarage = new OneTablelineView(
         numberLine,
-        await dataOneCar.color,
-        await dataOneCar.name,
-        el.wins,
-        el.time,
+        el.colorWinner,
+        el.nameWinner,
+        el.winsWinner,
+        el.timeWinner,
       );
-      this.elementCreator?.addInnerElement(await oneGarage.getElementCreator());
+      this.elementCreator?.addInnerElement(oneGarage.getElementCreator());
     });
   }
 

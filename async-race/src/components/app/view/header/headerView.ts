@@ -54,7 +54,14 @@ export default class HeaderView extends View {
       {
         name: NAME_PAGES.garage.toUpperCase(),
         callBack: {
-          click: (): void => {
+          click: (event): void => {
+            const targetElement = event.target as HTMLButtonElement;
+            if (targetElement) {
+              const parent = targetElement?.closest('nav');
+              const buttonToWinners = parent?.lastChild as HTMLButtonElement;
+              buttonToWinners.disabled = false;
+              targetElement.disabled = true;
+            }
             mainView.redrawContent(garageView);
             changeElementsDisabling('.reset', false);
           },
@@ -63,11 +70,13 @@ export default class HeaderView extends View {
       {
         name: NAME_PAGES.winners.toUpperCase(),
         callBack: {
-          click: (): void => {
-            try {
-              winnersView.resultsBlock.deleteContent();
-            } catch (error) {
-              console.log(error);
+          click: (event): void => {
+            const targetElement = event.target as HTMLButtonElement;
+            if (targetElement) {
+              const parent = targetElement?.closest('nav');
+              const buttonToGarage = parent?.firstChild as HTMLButtonElement;
+              buttonToGarage.disabled = false;
+              targetElement.disabled = true;
             }
             definePaginationActivity(winnersView);
             mainView.redrawContent(winnersView);
@@ -79,7 +88,7 @@ export default class HeaderView extends View {
       const linkView = new LinkView(el, this.arrLinkElements);
       this.arrLinkElements.push(linkView);
       if (index === INDEX_START_PAGE) {
-        el.callBack.click();
+        el.callBack.click('click');
         linkView.setSelectedLink();
       }
       creatorNav.addInnerElement(linkView.getElementCreator());

@@ -71,7 +71,7 @@ export interface GarageViewData {
 }
 
 export interface WinnersData {
-    data: WinnerData[];
+    dataWinners: WinnerData[];
     countWinners: number;
     maxPage: number;
 }
@@ -86,3 +86,10 @@ export type BodyRequest = {
     name: string;
     color: string;
 };
+
+export interface ParametersResultBlock {
+    colorWinner: string,
+    nameWinner: string,
+    winsWinner: number,
+    timeWinner: number,
+}
