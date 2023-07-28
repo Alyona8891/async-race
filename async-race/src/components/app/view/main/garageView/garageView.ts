@@ -14,12 +14,13 @@ import {
   WinnerData,
 } from '../../../../../types/types';
 import clearInputValue from '../../../../functions/clearInputValue';
-import changeElementsDisabling from '../../../../functions/changeElementsDisabling';
+import changeElementDisabling from '../../../../functions/changeElementDisabling';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
 import View from '../../view';
 import './garage.css';
 import RaceBlockView from './raceBlockView/raceBlockView';
+import clearAllIntervals from '../../../../functions/clearAllIntervals';
 
 export default class GarageView extends View {
   creatingField: string;
@@ -52,132 +53,7 @@ export default class GarageView extends View {
       callback: {
         click: async (event: Event): Promise<void | Record<string, string>> => {
           const { target } = event;
-          if ((target as HTMLElement).classList.contains('block-garage__delete-button')) {
-            const parent = (target as HTMLElement).closest('.block-garage');
-            let garageBlockId;
-            if (parent) {
-              garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
-            }
-            GarageView.deleteCar(garageBlockId)
-              .then(() => {
-                GarageView.deleteWinner(garageBlockId);
-              }).then(() => {
-                this.raceBlock?.deleteContent();
-              }).then(() => {
-                this.createGarageView(this.currentPage);
-              });
-          }
-          if ((target as HTMLElement).classList.contains('block-garage__select-button')) {
-            const parent = (target as HTMLElement).closest('.block-garage');
-            let garageBlockId;
-            let garageBlock;
-            let svgElementFill;
-            let nameCar;
-            if (parent) {
-              garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
-            }
-            if (parent) {
-              garageBlock = parent.querySelector('.block-garage__road-container');
-              const svgElement = garageBlock.querySelector('svg > g');
-              svgElementFill = (svgElement as SVGElement).getAttribute('fill');
-            }
-            if (parent) {
-              nameCar = parent.querySelector('span')?.innerText;
-            }
-            const inputsArr = document.querySelectorAll('input');
-            const parentDiv = inputsArr[2].closest('div');
-            const updateButton = parentDiv?.querySelector('button');
-            if (updateButton) {
-              updateButton.disabled = false;
-            }
-            inputsArr[2].disabled = false;
-            inputsArr[2].value = nameCar;
-            this.updatingField = nameCar;
-            inputsArr[3].value = svgElementFill;
-            inputsArr[3].disabled = false;
-            this.updatingFieldColor = svgElementFill;
-            this.updatingCarId = garageBlockId;
-          }
-          if ((target as HTMLElement).classList.contains('block-garage__button_moving')) {
-            changeElementsDisabling('.garage-block__input-block button', true);
-            changeElementsDisabling('.garage-block > button', true);
-            changeElementsDisabling('.block-garage__select-button', true);
-            changeElementsDisabling('.block-garage__delete-button', true);
-            changeElementsDisabling('.reset', false);
-            changeElementsDisabling('input', true);
-            changeElementsDisabling('.input-update input', true);
-            changeElementsDisabling('.input-update button', true);
-            (target as HTMLElement).setAttribute('disabled', '');
-            const parent = (target as HTMLElement).closest('.block-garage');
-            const stoppingButton = parent?.querySelector('.block-garage__button_stopping');
-            let garageBlockId;
-            let svgElement;
-            let roadLength;
-            if (parent && stoppingButton instanceof HTMLButtonElement) {
-              garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
-              const garageBlock = parent.querySelector('.block-garage__road-container');
-              stoppingButton.disabled = false;
-              svgElement = garageBlock?.querySelector('svg');
-              roadLength = (garageBlock as HTMLElement).offsetWidth - 60;
-            }
-            let parametersMoving;
-            try {
-              parametersMoving = await GarageView.startEngine(garageBlockId, 'started');
-            } catch (error) {
-              console.log(error);
-            }
-            const time = (parametersMoving.data.distance) / (parametersMoving.data.velocity);
-            const oneStep = roadLength / (time / 10);
-            let startPosition = 0;
-            const carAnimation = setInterval(() => {
-              if (startPosition < roadLength) {
-                startPosition += oneStep;
-                (svgElement as HTMLElement).style.left = `${startPosition}px`;
-              }
-            }, 10);
-            stoppingButton?.setAttribute('name', (carAnimation as unknown as number).toString());
-
-            try {
-              await GarageView.startEngine(garageBlockId, 'drive');
-            } catch {
-              clearInterval(carAnimation);
-            }
-          }
-          if ((target as HTMLElement).classList.contains('block-garage__button_stopping')) {
-            changeElementsDisabling('.garage-block__input-block button', false);
-            changeElementsDisabling('.garage-block > button', false);
-            changeElementsDisabling('input', false);
-            changeElementsDisabling('.input-update input', true);
-            changeElementsDisabling('.input-update button', true);
-            changeElementsDisabling('.block-garage__select-button', false);
-            changeElementsDisabling('.block-garage__delete-button', false);
-            if (this.buttonPrev && this.buttonNext) {
-              this.checkStatusActive(
-                this.buttonPrev,
-                this.buttonNext,
-                this.maxPage,
-                this.currentPage,
-              );
-            }
-            (target as HTMLElement).setAttribute('disabled', '');
-            const parent = (target as HTMLElement).closest('.block-garage');
-            const movingButton = parent?.querySelector('.block-garage__button_moving');
-            let garageBlockId;
-            let svgElement;
-            if (parent) {
-              garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
-              const garageBlock = parent.querySelector('.block-garage__road-container');
-              svgElement = garageBlock?.querySelector('svg');
-            }
-            await GarageView.startEngine(garageBlockId, 'stopped').then(() => {
-              const intervalId = (target as HTMLElement).getAttribute('name');
-              if (intervalId) {
-                clearInterval(+intervalId);
-              }
-              svgElement.style.left = '0px';
-              (movingButton as HTMLButtonElement).disabled = false;
-            });
-          }
+          this.doAccordingConditions(target as HTMLElement);
           return {};
         },
       },
@@ -279,15 +155,15 @@ export default class GarageView extends View {
             roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
             const arrPromisesStarted = arrElementsId.map(
               (el) => new Promise((resolve, reject) => {
-                changeElementsDisabling('button', true);
-                changeElementsDisabling('.page-header__link', true);
-                changeElementsDisabling('input', true);
+                changeElementDisabling('button', true);
+                changeElementDisabling('.page-header__link', true);
+                changeElementDisabling('input', true);
                 fetch(`${baseUrl}${path.engine}?id=${el}&status=started`, {
                   method: 'PATCH',
                 })
                   .then((response) => response.json())
                   .then((dataResp) => {
-                    changeElementsDisabling('.page-header__link', false);
+                    changeElementDisabling('.page-header__link', false);
                     return { data: dataResp, id: el };
                   })
                   .then((data) => {
@@ -329,7 +205,7 @@ export default class GarageView extends View {
               });
               Promise.any(requestsResult)
                 .then(async (data) => {
-                  changeElementsDisabling('.reset', false);
+                  changeElementDisabling('.reset', false);
                   const idWinner = data.id;
                   const winnerTime = data.time;
                   const dataOneCar = await GarageView.getOneCar(idWinner);
@@ -359,51 +235,7 @@ export default class GarageView extends View {
       textContent: 'RESET',
       callback: {
         click: () => {
-          const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
-          const arrElementsId: string[] = [];
-          const svgElementsList = document.querySelectorAll(
-            '.block-garage__road-container > svg',
-          ) as unknown as HTMLElement[];
-          roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
-          const requests = arrElementsId.map(
-            (el) => new Promise((resolve, reject) => {
-              changeElementsDisabling('button', true);
-              changeElementsDisabling('input', true);
-              fetch(`${baseUrl}${path.engine}?id=${el}&status=stopped`, {
-                method: 'PATCH',
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  resolve(data);
-                })
-                .catch((error) => {
-                  reject(error);
-                });
-            }),
-          );
-          Promise.all(requests).then(() => {
-            changeElementsDisabling('button', false);
-            changeElementsDisabling('input', false);
-            changeElementsDisabling('.block-garage__button_stopping', true);
-            changeElementsDisabling('.input-update input', true);
-            changeElementsDisabling('.input-update button', true);
-            if (this.buttonPrev && this.buttonNext) {
-              this.checkStatusActive(
-                this.buttonPrev,
-                this.buttonNext,
-                this.maxPage,
-                this.currentPage,
-              );
-            }
-            this.modalWindow?.classList.add('garage-block__modal-window_unvisible');
-            svgElementsList.forEach(async (el) => {
-              const newEl = el;
-              for (let i = 1; i < 99999; i += 1) {
-                clearInterval(i);
-              }
-              newEl.style.left = '0px';
-            });
-          });
+          this.handlerButtonReset();
         },
       },
     };
@@ -539,14 +371,14 @@ export default class GarageView extends View {
 
   async createGarageView(currentPage: number): Promise<void> {
     try {
-      changeElementsDisabling('button', true);
-      changeElementsDisabling('input', true);
+      changeElementDisabling('button', true);
+      changeElementDisabling('input', true);
       const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageViewData;
-      changeElementsDisabling('button', false);
-      changeElementsDisabling('input', false);
-      changeElementsDisabling('.block-garage__button_stopping', true);
-      changeElementsDisabling('.input-update input', true);
-      changeElementsDisabling('.input-update button', true);
+      changeElementDisabling('button', false);
+      changeElementDisabling('input', false);
+      changeElementDisabling('.block-garage__button_stopping', true);
+      changeElementDisabling('.input-update input', true);
+      changeElementDisabling('.input-update button', true);
       let raceBlock;
       if (parametersRaceBlock.countCars) {
         raceBlock = new RaceBlockView(
@@ -731,5 +563,205 @@ export default class GarageView extends View {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  handlerDeleteButton(target: HTMLElement): void {
+    const parent = (target).closest('.block-garage');
+    let garageBlockId;
+    if (parent) {
+      garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
+    }
+    GarageView.deleteCar(garageBlockId)
+      .then(() => {
+        GarageView.deleteWinner(garageBlockId);
+      }).then(() => {
+        this.raceBlock?.deleteContent();
+      }).then(() => {
+        this.createGarageView(this.currentPage);
+      });
+  }
+
+  handlerSelectButton(target: HTMLElement): void {
+    const parent = (target as HTMLElement).closest('.block-garage');
+    let garageBlockId;
+    let garageBlock;
+    let svgElementFill;
+    let nameCar;
+    if (parent) {
+      garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
+    }
+    if (parent) {
+      garageBlock = parent.querySelector('.block-garage__road-container');
+      const svgElement = garageBlock.querySelector('svg > g');
+      svgElementFill = (svgElement as SVGElement).getAttribute('fill');
+    }
+    if (parent) {
+      nameCar = parent.querySelector('span')?.innerText;
+    }
+    const inputsArr = document.querySelectorAll('input');
+    const parentDiv = inputsArr[2].closest('div');
+    const updateButton = parentDiv?.querySelector('button');
+    if (updateButton) {
+      updateButton.disabled = false;
+    }
+    inputsArr[2].disabled = false;
+    inputsArr[2].value = nameCar;
+    this.updatingField = nameCar;
+    inputsArr[3].value = svgElementFill;
+    inputsArr[3].disabled = false;
+    this.updatingFieldColor = svgElementFill;
+    this.updatingCarId = garageBlockId;
+  }
+
+  async handlerMovingButton(target: HTMLElement): Promise<void> {
+    this.changeElementsDisablingMoving();
+    (target as HTMLElement).setAttribute('disabled', '');
+    const parent = (target as HTMLElement).closest('.block-garage');
+    const stoppingButton = parent?.querySelector('.block-garage__button_stopping');
+    let garageBlockId;
+    let svgElement;
+    let roadLength;
+    if (parent && stoppingButton instanceof HTMLButtonElement) {
+      garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
+      const garageBlock = parent.querySelector('.block-garage__road-container');
+      stoppingButton.disabled = false;
+      svgElement = garageBlock?.querySelector('svg');
+      roadLength = (garageBlock as HTMLElement).offsetWidth - 60;
+    }
+    let parametersMoving;
+    try {
+      parametersMoving = await GarageView.startEngine(garageBlockId, 'started');
+    } catch (error) {
+      console.log(error);
+    }
+    const time = (parametersMoving.data.distance) / (parametersMoving.data.velocity);
+    const oneStep = roadLength / (time / 10);
+    let startPosition = 0;
+    const carAnimation = setInterval(() => {
+      if (startPosition < roadLength) {
+        startPosition += oneStep;
+        (svgElement as HTMLElement).style.left = `${startPosition}px`;
+      }
+    }, 10);
+    stoppingButton?.setAttribute('name', (carAnimation as unknown as number).toString());
+    try {
+      await GarageView.startEngine(garageBlockId, 'drive');
+    } catch {
+      clearInterval(carAnimation);
+    }
+  }
+
+  changeElementsDisablingMoving(): void {
+    changeElementDisabling('.garage-block__input-block button', true);
+    changeElementDisabling('.garage-block > button', true);
+    changeElementDisabling('.block-garage__select-button', true);
+    changeElementDisabling('.block-garage__delete-button', true);
+    changeElementDisabling('.reset', false);
+    changeElementDisabling('input', true);
+    changeElementDisabling('.input-update input', true);
+    changeElementDisabling('.input-update button', true);
+  }
+
+  async handlerStoppingButton(target: HTMLElement): Promise<void> {
+    this.changeElementsDisablingStopping();
+    if (this.buttonPrev && this.buttonNext) {
+      this.checkStatusActive(
+        this.buttonPrev,
+        this.buttonNext,
+        this.maxPage,
+        this.currentPage,
+      );
+    }
+    (target as HTMLElement).setAttribute('disabled', '');
+    const parent = (target as HTMLElement).closest('.block-garage');
+    const movingButton = parent?.querySelector('.block-garage__button_moving');
+    let garageBlockId;
+    let svgElement;
+    if (parent) {
+      garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
+      const garageBlock = parent.querySelector('.block-garage__road-container');
+      svgElement = garageBlock?.querySelector('svg');
+    }
+    await GarageView.startEngine(garageBlockId, 'stopped').then(() => {
+      const intervalId = (target as HTMLElement).getAttribute('name');
+      if (intervalId) {
+        clearInterval(+intervalId);
+      }
+      svgElement.style.left = '0px';
+      (movingButton as HTMLButtonElement).disabled = false;
+    });
+  }
+
+  changeElementsDisablingStopping(): void {
+    changeElementDisabling('.garage-block__input-block button', false);
+    changeElementDisabling('.garage-block > button', false);
+    changeElementDisabling('input', false);
+    changeElementDisabling('.input-update input', true);
+    changeElementDisabling('.input-update button', true);
+    changeElementDisabling('.block-garage__select-button', false);
+    changeElementDisabling('.block-garage__delete-button', false);
+  }
+
+  doAccordingConditions(target: HTMLElement): void {
+    if (target && (target as HTMLElement).classList.contains('block-garage__delete-button')) {
+      this.handlerDeleteButton(target as HTMLElement);
+    }
+    if ((target as HTMLElement).classList.contains('block-garage__select-button')) {
+      this.handlerSelectButton(target as HTMLElement);
+    }
+    if ((target as HTMLElement).classList.contains('block-garage__button_moving')) {
+      this.handlerMovingButton(target as HTMLElement);
+    }
+    if ((target as HTMLElement).classList.contains('block-garage__button_stopping')) {
+      this.handlerStoppingButton(target as HTMLElement);
+    }
+  }
+
+  handlerButtonReset(): void {
+    const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
+    const arrElementsId: string[] = [];
+    const svgElementsList = document.querySelectorAll(
+      '.block-garage__road-container > svg',
+    ) as unknown as HTMLElement[];
+    roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
+    const requests = arrElementsId.map(
+      (el) => new Promise((resolve, reject) => {
+        changeElementDisabling('button', true);
+        changeElementDisabling('input', true);
+        fetch(`${baseUrl}${path.engine}?id=${el}&status=stopped`, {
+          method: 'PATCH',
+        })
+          .then((response) => response.json())
+          .then((data) => resolve(data))
+          .catch((error) => {
+            reject(error);
+          });
+      }),
+    );
+    Promise.all(requests).then(() => {
+      this.changeElementsDisablingReset();
+      if (this.buttonPrev && this.buttonNext) {
+        this.checkStatusActive(
+          this.buttonPrev,
+          this.buttonNext,
+          this.maxPage,
+          this.currentPage,
+        );
+      }
+      this.modalWindow?.classList.add('garage-block__modal-window_unvisible');
+      svgElementsList.forEach(async (el) => {
+        const newEl = el;
+        clearAllIntervals();
+        newEl.style.left = '0px';
+      });
+    });
+  }
+
+  changeElementsDisablingReset(): void {
+    changeElementDisabling('button', false);
+    changeElementDisabling('input', false);
+    changeElementDisabling('.block-garage__button_stopping', true);
+    changeElementDisabling('.input-update input', true);
+    changeElementDisabling('.input-update button', true);
   }
 }

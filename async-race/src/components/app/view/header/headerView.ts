@@ -6,7 +6,7 @@ import LinkView from './link/linkView';
 import GarageView from '../main/garageView/garageView';
 import MainView from '../main/mainView';
 import WinnersView from '../main/winnersView/winnersView';
-import changeElementsDisabling from '../../../functions/changeElementsDisabling';
+import changeElementDisabling from '../../../functions/changeElementDisabling';
 import definePaginationActivity from '../../../functions/definePaginationActivity';
 
 const NAME_PAGES = {
@@ -63,7 +63,7 @@ export default class HeaderView extends View {
             const targetElement = event.target as HTMLButtonElement;
             this.makeGarageButtonDisabled(targetElement);
             mainView.redrawContent(garageView);
-            changeElementsDisabling('.reset', false);
+            changeElementDisabling('.reset', false);
           },
         },
       },
