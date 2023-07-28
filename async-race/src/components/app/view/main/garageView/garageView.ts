@@ -322,7 +322,6 @@ export default class GarageView extends View {
                   const idWinner = data.id;
                   const winnerTime = data.time;
                   const dataOneCar = await GarageView.getOneCar(idWinner);
-                  console.log({ idWinner: +idWinner, winnerTime, dataOneCar });
                   return { idWinner: +idWinner, winnerTime, dataOneCar };
                 })
                 .then((data) => {

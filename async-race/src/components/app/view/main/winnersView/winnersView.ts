@@ -216,7 +216,6 @@ export default class WinnersView extends View {
 
   deleteContent(): void {
     const htmlElement = this.elementCreator?.getCreatedElement();
-    console.log(htmlElement?.lastElementChild);
     while (htmlElement?.lastElementChild?.classList.contains('results-block')) {
       htmlElement.lastElementChild.remove();
     }

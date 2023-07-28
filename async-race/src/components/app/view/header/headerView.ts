@@ -70,7 +70,7 @@ export default class HeaderView extends View {
       {
         name: NAME_PAGES.winners.toUpperCase(),
         callBack: {
-          click: (event: Event): void => {
+          click: (event): void => {
             const targetElement = event.target as HTMLButtonElement;
             this.makeWinnersButtonDisabled(targetElement);
             definePaginationActivity(winnersView);
@@ -81,10 +81,11 @@ export default class HeaderView extends View {
     ];
     pagesParameters.forEach((el, index) => {
       const linkView = new LinkView(el, this.arrLinkElements);
-      this.arrLinkElements.push(linkView);
       if (index === INDEX_START_PAGE) {
+        el.callBack.click('click');
         linkView.setSelectedLink();
       }
+      this.arrLinkElements.push(linkView);
       creatorNav.addInnerElement(linkView.getElementCreator());
     });
   }
