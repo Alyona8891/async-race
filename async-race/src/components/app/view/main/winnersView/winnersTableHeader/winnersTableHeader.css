@@ -13,7 +13,10 @@
 }
 
 .winners-block__table-line {
+    display: flex;
     border: solid 1px beige;
+    justify-content: center;
+    align-items: center;
 }
 
 .wins-sort, .time-sort {

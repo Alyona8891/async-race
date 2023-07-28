@@ -49,19 +49,19 @@ export default class HeaderView extends View {
     return creatorNav;
   }
 
-  createLinkElements(mainView, garageView, winnersView, creatorNav): void {
+  createLinkElements(
+    mainView: MainView,
+    garageView: GarageView,
+    winnersView: WinnersView,
+    creatorNav: ElementCreator,
+  ): void {
     const pagesParameters = [
       {
         name: NAME_PAGES.garage.toUpperCase(),
         callBack: {
           click: (event): void => {
             const targetElement = event.target as HTMLButtonElement;
-            if (targetElement) {
-              const parent = targetElement?.closest('nav');
-              const buttonToWinners = parent?.lastChild as HTMLButtonElement;
-              buttonToWinners.disabled = false;
-              targetElement.disabled = true;
-            }
+            this.makeGarageButtonDisabled(targetElement);
             mainView.redrawContent(garageView);
             changeElementsDisabling('.reset', false);
           },
@@ -70,14 +70,9 @@ export default class HeaderView extends View {
       {
         name: NAME_PAGES.winners.toUpperCase(),
         callBack: {
-          click: (event): void => {
+          click: (event: Event): void => {
             const targetElement = event.target as HTMLButtonElement;
-            if (targetElement) {
-              const parent = targetElement?.closest('nav');
-              const buttonToGarage = parent?.firstChild as HTMLButtonElement;
-              buttonToGarage.disabled = false;
-              targetElement.disabled = true;
-            }
+            this.makeWinnersButtonDisabled(targetElement);
             definePaginationActivity(winnersView);
             mainView.redrawContent(winnersView);
           },
@@ -88,10 +83,29 @@ export default class HeaderView extends View {
       const linkView = new LinkView(el, this.arrLinkElements);
       this.arrLinkElements.push(linkView);
       if (index === INDEX_START_PAGE) {
-        el.callBack.click('click');
         linkView.setSelectedLink();
       }
       creatorNav.addInnerElement(linkView.getElementCreator());
     });
+  }
+
+  makeGarageButtonDisabled(targetElement: HTMLButtonElement): void {
+    const newTargetElement = targetElement;
+    if (newTargetElement) {
+      const parent = newTargetElement?.closest('nav');
+      const buttonToWinners = parent?.lastChild as HTMLButtonElement;
+      buttonToWinners.disabled = false;
+      newTargetElement.disabled = true;
+    }
+  }
+
+  makeWinnersButtonDisabled(targetElement: HTMLButtonElement): void {
+    const newTargetElement = targetElement;
+    if (newTargetElement) {
+      const parent = newTargetElement?.closest('nav');
+      const buttonToGarage = parent?.firstChild as HTMLButtonElement;
+      buttonToGarage.disabled = false;
+      newTargetElement.disabled = true;
+    }
   }
 }
