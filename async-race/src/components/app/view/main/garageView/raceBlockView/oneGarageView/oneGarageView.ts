@@ -1,6 +1,5 @@
 import './oneGarage.css';
 import { DataOneCar, ParametersElementCreator } from '../../../../../../../types/types';
-import ElementCreator from '../../../../../../units/elementCreator';
 import View from '../../../../view';
 import { carElementString } from '../../../../../../../data/data';
 import changeFillSize from '../../../../../../functions/changeFill';

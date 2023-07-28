@@ -2,7 +2,7 @@ import './resultsBlock.css';
 import View from '../../../view';
 import { DataOneCar, ParametersElementCreator, ParametersResultBlock } from '../../../../../../types/types';
 import WinnersTableHeaderView from '../winnersTableHeader/winnersTableHeaderView';
-import OneTablelineView from './oneTableLineView/oneTableLineView';
+import OneTableLineView from './oneTableLineView/oneTableLineView';
 import { baseUrl, path } from '../../../../../../data/data';
 
 export default class ResultsBlockView extends View {
@@ -37,7 +37,7 @@ export default class ResultsBlockView extends View {
     let numberLine = 0;
     dataWinners.forEach(async (el) => {
       numberLine += 1;
-      const oneGarage = new OneTablelineView(
+      const oneGarage = new OneTableLineView(
         numberLine,
         el.colorWinner,
         el.nameWinner,
