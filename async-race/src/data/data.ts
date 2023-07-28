@@ -103,9 +103,9 @@ l-15 -73 3006 7 c1653 4 3007 8 3009 9 1 1 -8 37 -20 81 -19 67 -22 105 -22
 export const baseUrl = 'http://localhost:3000';
 
 export const path = {
-    garage: '/garage',
-    engine: '/engine',
-    winners: '/winners',
+  garage: '/garage',
+  engine: '/engine',
+  winners: '/winners',
 };
 
 export const carBrands = ['Volvo', 'Audi', 'Nissan', 'BMW', 'Tesla', 'Ford', 'Opel', 'Mazda', 'Jeep', 'Dodge'];

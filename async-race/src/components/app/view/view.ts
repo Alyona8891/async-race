@@ -23,8 +23,8 @@ export default class View {
   checkStatusActive(
     buttonPrev: ElementCreator,
     buttonNext: ElementCreator,
-    maxPage,
-    currentPage,
+    maxPage: number,
+    currentPage: number,
   ): void {
     const buttonPrevElement = buttonPrev.getCreatedElement() as HTMLButtonElement;
     const buttonNextElement = buttonNext.getCreatedElement() as HTMLButtonElement;
