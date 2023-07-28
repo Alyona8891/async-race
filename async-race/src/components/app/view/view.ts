@@ -42,4 +42,21 @@ export default class View {
       buttonNextElement.disabled = false;
     }
   }
+
+  addCreatedElement(
+    tagName: string,
+    classNameArr: string[],
+    text: string,
+    element: ElementCreator | null,
+  ): ElementCreator {
+    const parametersElement: ParametersElementCreator = {
+      tag: tagName,
+      tagClasses: classNameArr,
+      textContent: text,
+      callback: null,
+    };
+    const createdElement = new ElementCreator(parametersElement);
+    element?.addInnerElement(createdElement);
+    return createdElement;
+  }
 }
