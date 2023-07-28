@@ -32,17 +32,17 @@ export default class GarageView extends View {
 
   currentPage: number;
 
-  raceBlock!: RaceBlockView;
+  raceBlock: RaceBlockView | null;
 
   updatingCarId: string;
 
   maxPage: number;
 
-  modalWindow!: HTMLElement;
+  modalWindow: HTMLElement | null;
 
-  buttonNext!: ElementCreator;
+  buttonNext: ElementCreator | null;
 
-  buttonPrev!: ElementCreator;
+  buttonPrev: ElementCreator | null;
 
   constructor() {
     const parameters: ParametersElementCreator = {
@@ -62,7 +62,7 @@ export default class GarageView extends View {
               .then(() => {
                 GarageView.deleteWinner(garageBlockId);
               }).then(() => {
-                this.raceBlock.deleteContent();
+                this.raceBlock?.deleteContent();
               }).then(() => {
                 this.createGarageView(this.currentPage);
               });
@@ -126,7 +126,7 @@ export default class GarageView extends View {
             } catch (error) {
               console.log(error);
             }
-            const time = (await parametersMoving.data.distance) / (await parametersMoving.data.velocity);
+            const time = (parametersMoving.data.distance) / (parametersMoving.data.velocity);
             const oneStep = roadLength / (time / 10);
             let startPosition = 0;
             const carAnimation = setInterval(() => {
@@ -151,7 +151,14 @@ export default class GarageView extends View {
             changeElementsDisabling('.input-update button', true);
             changeElementsDisabling('.block-garage__select-button', false);
             changeElementsDisabling('.block-garage__delete-button', false);
-            this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
+            if (this.buttonPrev && this.buttonNext) {
+              this.checkStatusActive(
+                this.buttonPrev,
+                this.buttonNext,
+                this.maxPage,
+                this.currentPage,
+              );
+            }
             (target as HTMLElement).setAttribute('disabled', '');
             const parent = (target as HTMLElement).closest('.block-garage');
             const movingButton = parent?.querySelector('.block-garage__button_moving');
@@ -176,6 +183,10 @@ export default class GarageView extends View {
       },
     };
     super(parameters);
+    this.raceBlock = null;
+    this.modalWindow = null;
+    this.buttonNext = null;
+    this.buttonPrev = null;
     this.creatingField = '';
     this.creatingFieldColor = '#000000';
     this.updatingField = '';
@@ -200,7 +211,7 @@ export default class GarageView extends View {
           if (targetElement instanceof HTMLButtonElement && this.creatingField) {
             GarageView.createCar({ name: this.creatingField, color: this.creatingFieldColor })
               .then(() => {
-                this.raceBlock.deleteContent();
+                this.raceBlock?.deleteContent();
                 this.createGarageView(this.currentPage);
               }).then(() => {
                 this.creatingField = '';
@@ -225,7 +236,7 @@ export default class GarageView extends View {
           if (targetElement instanceof HTMLButtonElement) {
             GarageView.updateCar(this.updatingCarId, this.updatingField, this.updatingFieldColor)
               .then(() => {
-                this.raceBlock.deleteContent();
+                this.raceBlock?.deleteContent();
                 this.createGarageView(this.currentPage);
               });
             const inputsArr = document.querySelectorAll('input');
@@ -376,8 +387,15 @@ export default class GarageView extends View {
             changeElementsDisabling('.block-garage__button_stopping', true);
             changeElementsDisabling('.input-update input', true);
             changeElementsDisabling('.input-update button', true);
-            this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
-            this.modalWindow.classList.add('garage-block__modal-window_unvisible');
+            if (this.buttonPrev && this.buttonNext) {
+              this.checkStatusActive(
+                this.buttonPrev,
+                this.buttonNext,
+                this.maxPage,
+                this.currentPage,
+              );
+            }
+            this.modalWindow?.classList.add('garage-block__modal-window_unvisible');
             svgElementsList.forEach(async (el) => {
               const newEl = el;
               for (let i = 1; i < 99999; i += 1) {
@@ -402,7 +420,7 @@ export default class GarageView extends View {
           try {
             const targetElement = event.target as HTMLButtonElement;
             targetElement.disabled = true;
-            this.raceBlock.deleteContent();
+            this.raceBlock?.deleteContent();
             const arr = new Array(100).fill(1);
             const requestsResult = arr.map(async () => {
               const modelCar = GarageView.getRandomNameCar(carBrands, carModels);
@@ -429,8 +447,14 @@ export default class GarageView extends View {
         click: async () => {
           if (this.currentPage !== 1) {
             this.currentPage -= 1;
-            this.raceBlock.deleteContent();
-            await this.createGarageView(this.currentPage).then(() => this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage));
+            this.raceBlock?.deleteContent();
+            await this.createGarageView(this.currentPage)
+              .then(() => this.checkStatusActive(
+                buttonPrev,
+                buttonNext,
+                this.maxPage,
+                this.currentPage,
+              ));
           }
         },
       },
@@ -446,8 +470,14 @@ export default class GarageView extends View {
         click: async () => {
           if (this.currentPage !== this.maxPage) {
             this.currentPage += 1;
-            this.raceBlock.deleteContent();
-            await this.createGarageView(this.currentPage).then(() => this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage));
+            this.raceBlock?.deleteContent();
+            await this.createGarageView(this.currentPage)
+              .then(() => this.checkStatusActive(
+                buttonPrev,
+                buttonNext,
+                this.maxPage,
+                this.currentPage,
+              ));
           }
         },
       },
@@ -455,7 +485,8 @@ export default class GarageView extends View {
     buttonNext = new ElementCreator(parametersButtonNext);
     this.buttonNext = buttonNext;
     this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
-    this.createGarageView(this.currentPage).then(() => this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage));
+    this.createGarageView(this.currentPage)
+      .then(() => this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage));
     const parametersModalWindow: ParametersElementCreator = {
       tag: 'div',
       tagClasses: ['garage-block__modal-window', 'garage-block__modal-window_unvisible'],
@@ -484,7 +515,7 @@ export default class GarageView extends View {
     try {
       const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=7`);
       const data = await response.json();
-      const countCars = Number(await response.headers.get('X-Total-Count'));
+      const countCars = Number(response.headers.get('X-Total-Count'));
       const maxPage = Math.ceil(countCars / 7);
       result = { data, countCars, maxPage };
       return result;
@@ -511,22 +542,25 @@ export default class GarageView extends View {
       changeElementsDisabling('button', true);
       changeElementsDisabling('input', true);
       const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageViewData;
-      const data = await parametersRaceBlock.data;
-      const countCars = await parametersRaceBlock.countCars;
-      const maxPage = await parametersRaceBlock.maxPage;
       changeElementsDisabling('button', false);
       changeElementsDisabling('input', false);
       changeElementsDisabling('.block-garage__button_stopping', true);
       changeElementsDisabling('.input-update input', true);
       changeElementsDisabling('.input-update button', true);
       let raceBlock;
-      if (countCars) {
-        raceBlock = new RaceBlockView(data, countCars, currentPage);
+      if (parametersRaceBlock.countCars) {
+        raceBlock = new RaceBlockView(
+          parametersRaceBlock.data,
+          parametersRaceBlock.countCars,
+          currentPage,
+        );
         this.raceBlock = raceBlock;
-        this.maxPage = maxPage;
+        this.maxPage = parametersRaceBlock.maxPage;
       }
       this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
-      this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
+      if (this.buttonPrev && this.buttonNext) {
+        this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -598,22 +632,19 @@ export default class GarageView extends View {
     return nameCar;
   }
 
-  static createBody(modelCar, colorCar): BodyRequest {
+  static createBody(modelCar: string, colorCar: string): BodyRequest {
     return { name: modelCar, color: colorCar };
   }
 
-  static async startEngine(id: number, status: string): Promise<DataDriveResult | { data: DataDrive; id: number }> {
-    /* let data;
-        try { */
+  static async startEngine(
+    id: number,
+    status: string,
+  ): Promise<DataDriveResult | { data: DataDrive; id: number }> {
     const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=${status}`, {
       method: 'PATCH',
     });
     const data = await response.json();
     return { data, id };
-    /* } catch (error) {
-            console.log(error);
-        }
-        return { data, id }; */
   }
 
   static async createWinner(body: { id: number; wins: number; time: number }): Promise<WinnerData> {
@@ -674,9 +705,9 @@ export default class GarageView extends View {
       if (!winner.id) {
         await GarageView.createWinner(GarageView.createBodyWinner(idWin, 1, timeWin));
       } else {
-        const winnerLastWins = await winner.wins;
+        const winnerLastWins = winner.wins;
         const winnerNewWins = +winnerLastWins + 1;
-        const winnerLastBestTime = await winner.time;
+        const winnerLastBestTime = winner.time;
         if (winnerLastBestTime < timeWin) {
           await GarageView.updateWinner(idWin, winnerNewWins, winnerLastBestTime);
         } else {
