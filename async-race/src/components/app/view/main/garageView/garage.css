@@ -2,19 +2,19 @@
   position: relative;
 }
 
-.garage-block__button, .garage-block__pagination-prev, .garage-block__pagination-next {
+.garage-block__button, .pagination-prev, .pagination-next {
     margin: 0 10px 10px 0;
     padding: 5px;
 }
 
-.garage-block__pagination-prev, .garage-block__pagination-next {
+.pagination-prev, .pagination-next {
    background-color: inherit;
    border: #f20 1px solid;
    border-radius: 30px;
    color:azure
 }
 
-.garage-block__pagination-prev:disabled, .garage-block__pagination-next:disabled {
+.pagination-prev:disabled, .pagination-next:disabled {
   background-color: inherit;
   border: azure 1px solid;
   border-radius: 30px;

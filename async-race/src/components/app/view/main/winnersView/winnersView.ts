@@ -10,15 +10,15 @@ export default class WinnersView extends View {
 
   currentPage: number;
 
-  resultsBlock!: ResultsBlockView;
+  resultsBlock: ResultsBlockView | null;
 
   winsSort: string;
 
   timeSort: string;
 
-  buttonNext!: ElementCreator;
+  buttonNext: ElementCreator | null;
 
-  buttonPrev!: ElementCreator;
+  buttonPrev: ElementCreator | null;
 
   constructor() {
     const parameters: ParametersElementCreator = {
@@ -29,51 +29,10 @@ export default class WinnersView extends View {
         click: async (event: Event): Promise<void | Record<string, string>> => {
           const targetElement = event.target;
           if ((targetElement as HTMLElement).classList.contains('wins-sort')) {
-            this.timeSort = 'Best time(seconds)';
-            if (this.winsSort === 'Wins') {
-              this.winsSort = '↓ Wins';
-              this.resultsBlock.deleteContent();
-              this.createResultsView(this.currentPage, 'wins', 'DESC', this.winsSort, this.timeSort);
-            } else if (this.winsSort === '↓ Wins') {
-              this.winsSort = '↑ Wins';
-              this.resultsBlock.deleteContent();
-              await this.createResultsView(this.currentPage, 'wins', 'ASC', this.winsSort, this.timeSort);
-            } else if (this.winsSort === '↑ Wins') {
-              this.winsSort = '↓ Wins';
-              this.resultsBlock.deleteContent();
-              await this.createResultsView(
-                this.currentPage,
-                'wins',
-                'DESC',
-                this.winsSort,
-                this.timeSort,
-              );
-            }
+            this.handlerSortWins();
           }
           if ((targetElement as HTMLElement).classList.contains('time-sort')) {
-            this.winsSort = 'Wins';
-            if (this.timeSort === 'Best time(seconds)') {
-              this.timeSort = '↓ Best time(seconds)';
-              console.log(this.winsSort, this.timeSort);
-              this.resultsBlock.deleteContent();
-              this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
-            } else if (this.timeSort === '↓ Best time(seconds)') {
-              this.timeSort = '↑ Best time(seconds)';
-              console.log(this.winsSort, this.timeSort);
-              this.resultsBlock.deleteContent();
-              await this.createResultsView(this.currentPage, 'time', 'ASC', this.winsSort, this.timeSort);
-            } else if (this.timeSort === '↑ Best time(seconds)') {
-              this.timeSort = '↓ Best time(seconds)';
-              console.log(this.winsSort, this.timeSort);
-              this.resultsBlock.deleteContent();
-              await this.createResultsView(
-                this.currentPage,
-                'time',
-                'DESC',
-                this.winsSort,
-                this.timeSort,
-              );
-            }
+            this.handlerSortTime();
           }
         },
       },
@@ -83,79 +42,130 @@ export default class WinnersView extends View {
     this.maxPage = 1;
     this.winsSort = 'Wins';
     this.timeSort = 'Best time(seconds)';
+    this.buttonNext = null;
+    this.buttonPrev = null;
+    this.resultsBlock = null;
     this.configView();
   }
 
   configView(): void {
-    let buttonPrev;
-    let buttonNext;
     const parametersButtonPrev: ParametersElementCreator = {
       tag: 'button',
-      tagClasses: ['garage-block__pagination-prev'],
+      tagClasses: ['winner-block__pagination-prev', 'pagination-prev'],
       textContent: 'Prev Page',
       callback: {
         click: () => {
           if (this.currentPage !== 1) {
             this.currentPage -= 1;
-            this.resultsBlock.deleteContent();
-            if (this.winsSort === 'Wins' && this.timeSort === 'Best time(seconds)') {
-              this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
-            } else if (this.winsSort === '↓ Wins') {
-              this.createResultsView(this.currentPage, 'wins', 'DESC', this.winsSort, this.timeSort);
-            } else if (this.winsSort === '↑ Wins') {
-              this.createResultsView(this.currentPage, 'wins', 'ASC', this.winsSort, this.timeSort);
-            } else if (this.timeSort === '↓ Best time(seconds)') {
-              this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
-            } else if (this.timeSort === '↑ Best time(seconds)') {
-              this.createResultsView(this.currentPage, 'time', 'ASC', this.winsSort, this.timeSort);
-            }
-            this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
+            this.createResultsViewWithCondition();
           }
         },
       },
     };
-    buttonPrev = new ElementCreator(parametersButtonPrev);
-    this.buttonPrev = buttonPrev;
-    this.elementCreator?.addInnerElement(buttonPrev.getCreatedElement());
+    this.buttonPrev = new ElementCreator(parametersButtonPrev);
+    this.elementCreator?.addInnerElement(this.buttonPrev.getCreatedElement());
     const parametersButtonNext: ParametersElementCreator = {
       tag: 'button',
-      tagClasses: ['garage-block__pagination-next'],
+      tagClasses: ['winner-block__pagination-next', 'pagination-next'],
       textContent: 'Next Page',
       callback: {
         click: () => {
           if (this.currentPage !== this.maxPage) {
             this.currentPage += 1;
-            this.resultsBlock.deleteContent();
-            if (this.winsSort === 'Wins' && this.timeSort === 'Best time(seconds)') {
-              this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
-            } else if (this.winsSort === '↓ Wins') {
-              this.createResultsView(this.currentPage, 'wins', 'DESC', this.winsSort, this.timeSort);
-            } else if (this.winsSort === '↑ Wins') {
-              this.createResultsView(this.currentPage, 'wins', 'ASC', this.winsSort, this.timeSort);
-            } else if (this.timeSort === '↓ Best time(seconds)') {
-              this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
-            } else if (this.timeSort === '↑ Best time(seconds)') {
-              this.createResultsView(this.currentPage, 'time', 'ASC', this.winsSort, this.timeSort);
-            }
-            this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage);
+            this.createResultsViewWithCondition();
           }
         },
       },
     };
-    buttonNext = new ElementCreator(parametersButtonNext);
-    this.buttonNext = buttonNext;
-    this.elementCreator?.addInnerElement(buttonNext.getCreatedElement());
-    this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort).then(() => this.checkStatusActive(buttonPrev, buttonNext, this.maxPage, this.currentPage));
+    this.buttonNext = new ElementCreator(parametersButtonNext);
+    this.elementCreator?.addInnerElement(this.buttonNext.getCreatedElement());
+    this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort)
+      .then(() => {
+        if (this.buttonPrev && this.buttonNext) {
+          this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
+        }
+      });
   }
 
-  static async getWinners(currentPage: number, sortParameter: string, orderParameter: string): Promise<WinnersData> {
+  handlerSortWins(): void {
+    this.timeSort = 'Best time(seconds)';
+    if (this.winsSort === 'Wins') {
+      this.winsSort = '↓ Wins';
+      this.resultsBlock?.deleteContent();
+      this.createResultsView(
+        this.currentPage,
+        'wins',
+        'DESC',
+        this.winsSort,
+        this.timeSort,
+      );
+    } else if (this.winsSort === '↓ Wins') {
+      this.winsSort = '↑ Wins';
+      this.resultsBlock?.deleteContent();
+      this.createResultsView(
+        this.currentPage,
+        'wins',
+        'ASC',
+        this.winsSort,
+        this.timeSort,
+      );
+    } else if (this.winsSort === '↑ Wins') {
+      this.winsSort = '↓ Wins';
+      this.resultsBlock?.deleteContent();
+      this.createResultsView(
+        this.currentPage,
+        'wins',
+        'DESC',
+        this.winsSort,
+        this.timeSort,
+      );
+    }
+  }
+
+  handlerSortTime(): void {
+    this.winsSort = 'Wins';
+    if (this.timeSort === 'Best time(seconds)') {
+      this.timeSort = '↓ Best time(seconds)';
+      this.createResultsView(
+        this.currentPage,
+        'time',
+        'DESC',
+        this.winsSort,
+        this.timeSort,
+      );
+    } else if (this.timeSort === '↓ Best time(seconds)') {
+      this.timeSort = '↑ Best time(seconds)';
+      this.createResultsView(
+        this.currentPage,
+        'time',
+        'ASC',
+        this.winsSort,
+        this.timeSort,
+      );
+    } else if (this.timeSort === '↑ Best time(seconds)') {
+      this.timeSort = '↓ Best time(seconds)';
+      this.createResultsView(
+        this.currentPage,
+        'time',
+        'DESC',
+        this.winsSort,
+        this.timeSort,
+      );
+    }
+  }
+
+  static async getWinners(
+    currentPage: number,
+    sortParameter: string,
+    orderParameter: string,
+  ): Promise<WinnersData> {
     let resultData;
     try {
       const response = await fetch(
         `${baseUrl}${path.winners}?_page=${currentPage}&_limit=10&_sort=${sortParameter}&_order=${orderParameter}`,
       );
       const data = await response.json();
-      const count = Number(await response.headers.get('X-Total-Count'));
+      const count = Number(response.headers.get('X-Total-Count'));
       const page = Math.ceil(count / 10);
       resultData = { dataWinners: data, countWinners: count, maxPage: page };
     } catch (error) {
@@ -165,20 +175,16 @@ export default class WinnersView extends View {
   }
 
   async createResultsView(
-    currentPage,
-    sortParameter,
-    orderParameter,
+    currentPage: number,
+    sortParameter: string,
+    orderParameter: string,
     winsSort: string,
     timeSort: string,
   ): Promise<void> {
     try {
       this.deleteContent();
-      const parametersRaceBlock = await WinnersView.getWinners(
-        currentPage,
-        sortParameter,
-        orderParameter,
-      );
-      const parametersResultBlock = parametersRaceBlock.dataWinners.map(async (el) => {
+      const parameters = await WinnersView.getWinners(currentPage, sortParameter, orderParameter);
+      const parametersResultBlock = parameters.dataWinners.map(async (el) => {
         const dataOneCar = await ResultsBlockView.getOneCar(el.id);
         return {
           colorWinner: dataOneCar.color,
@@ -187,8 +193,8 @@ export default class WinnersView extends View {
           timeWinner: el.time,
         };
       });
-      const countCarsData = parametersRaceBlock.countWinners;
-      const maxPageData = parametersRaceBlock.maxPage;
+      const countCarsData = parameters.countWinners;
+      const maxPageData = parameters.maxPage;
       Promise.all(parametersResultBlock)
         .then((data) => {
           if (countCarsData) {
@@ -201,7 +207,7 @@ export default class WinnersView extends View {
             );
             this.maxPage = maxPageData;
           }
-          this.elementCreator?.addInnerElement(this.resultsBlock.getElementCreator());
+          this.elementCreator?.addInnerElement(this.resultsBlock?.getElementCreator());
         });
     } catch (error) {
       console.log(error);
@@ -212,8 +218,29 @@ export default class WinnersView extends View {
     const htmlElement = this.elementCreator?.getCreatedElement();
     console.log(htmlElement?.lastElementChild);
     while (htmlElement?.lastElementChild?.classList.contains('results-block')) {
-      console.log('jjj');
       htmlElement.lastElementChild.remove();
+    }
+  }
+
+  createResultsViewWithCondition(): void {
+    if (this.winsSort === 'Wins' && this.timeSort === 'Best time(seconds)') {
+      this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
+    } else if (this.winsSort === '↓ Wins') {
+      this.createResultsView(this.currentPage, 'wins', 'DESC', this.winsSort, this.timeSort);
+    } else if (this.winsSort === '↑ Wins') {
+      this.createResultsView(this.currentPage, 'wins', 'ASC', this.winsSort, this.timeSort);
+    } else if (this.timeSort === '↓ Best time(seconds)') {
+      this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort);
+    } else if (this.timeSort === '↑ Best time(seconds)') {
+      this.createResultsView(this.currentPage, 'time', 'ASC', this.winsSort, this.timeSort);
+    }
+    if (this.buttonPrev && this.buttonNext) {
+      this.checkStatusActive(
+        this.buttonPrev,
+        this.buttonNext,
+        this.maxPage,
+        this.currentPage,
+      );
     }
   }
 }

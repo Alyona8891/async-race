@@ -424,7 +424,7 @@ export default class GarageView extends View {
     this.elementCreator?.addInnerElement(generateCarsButton.getCreatedElement());
     const parametersButtonPrev: ParametersElementCreator = {
       tag: 'button',
-      tagClasses: ['garage-block__pagination-prev'],
+      tagClasses: ['winner-block__pagination-prev', 'pagination-prev'],
       textContent: 'Prev Page',
       callback: {
         click: async () => {
@@ -441,7 +441,7 @@ export default class GarageView extends View {
     this.elementCreator?.addInnerElement(buttonPrev.getCreatedElement());
     const parametersButtonNext: ParametersElementCreator = {
       tag: 'button',
-      tagClasses: ['garage-block__pagination-next'],
+      tagClasses: ['garage-block__pagination-next', 'pagination-next'],
       textContent: 'Next Page',
       callback: {
         click: async () => {
