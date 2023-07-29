@@ -1,3 +1,5 @@
+const DEFAULT_COLOR = '#000000';
+
 function clearInputValue(targetElement: HTMLElement): void {
   const parent = (targetElement as HTMLElement).closest('div');
   const input = parent?.querySelectorAll('input');
@@ -6,7 +8,7 @@ function clearInputValue(targetElement: HTMLElement): void {
     if (newEl && !(newEl.getAttribute('type') === 'color')) {
       newEl.value = '';
     } else if (newEl && newEl.getAttribute('type') === 'color') {
-      newEl.value = '#000000';
+      newEl.value = DEFAULT_COLOR;
     }
   });
 }

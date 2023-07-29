@@ -5,6 +5,8 @@ import ElementCreator from '../../../../units/elementCreator';
 import { baseUrl, path } from '../../../../../data/data';
 import ResultsBlockView from './resultsBlockView/resultsBlockView';
 
+const COUNT_WINNERS_PAGE = 10;
+
 export default class WinnersView extends View {
   maxPage: number;
 
@@ -162,11 +164,11 @@ export default class WinnersView extends View {
     let resultData;
     try {
       const response = await fetch(
-        `${baseUrl}${path.winners}?_page=${currentPage}&_limit=10&_sort=${sortParameter}&_order=${orderParameter}`,
+        `${baseUrl}${path.winners}?_page=${currentPage}&_limit=${COUNT_WINNERS_PAGE}&_sort=${sortParameter}&_order=${orderParameter}`,
       );
       const data = await response.json();
       const count = Number(response.headers.get('X-Total-Count'));
-      const page = Math.ceil(count / 10);
+      const page = Math.ceil(count / COUNT_WINNERS_PAGE);
       resultData = { dataWinners: data, countWinners: count, maxPage: page };
     } catch (error) {
       console.log(error);

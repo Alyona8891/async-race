@@ -49,7 +49,6 @@ export default class HeaderView extends View {
     return creatorNav;
   }
 
-  // eslint-disable-next-line max-lines-per-function
   createLinkElements(
     mainView: MainView,
     garageView: GarageView,
@@ -61,15 +60,7 @@ export default class HeaderView extends View {
         name: NAME_PAGES.garage.toUpperCase(),
         callBack: {
           click: (event: Event | string): void => {
-            if (event instanceof Event) {
-              const targetElement = event.target as HTMLButtonElement;
-              this.makeGarageButtonDisabled(targetElement);
-              mainView.redrawContent(garageView);
-              changeElementDisabling('.reset', false);
-            } else {
-              mainView.redrawContent(garageView);
-              changeElementDisabling('.reset', false);
-            }
+            this.handlerGarageButton(event, garageView, mainView);
           },
         },
       },
@@ -77,15 +68,7 @@ export default class HeaderView extends View {
         name: NAME_PAGES.winners.toUpperCase(),
         callBack: {
           click: (event: Event | string): void => {
-            if (event instanceof Event) {
-              const targetElement = event.target as HTMLButtonElement;
-              this.makeWinnersButtonDisabled(targetElement);
-              definePaginationActivity(winnersView);
-              mainView.redrawContent(winnersView);
-            } else {
-              definePaginationActivity(winnersView);
-              mainView.redrawContent(winnersView);
-            }
+            this.handlerWinnersButton(event, winnersView, mainView);
           },
         },
       },
@@ -99,6 +82,30 @@ export default class HeaderView extends View {
       this.arrLinkElements.push(linkView);
       creatorNav.addInnerElement(linkView.getElementCreator());
     });
+  }
+
+  handlerGarageButton(event: Event | string, garageView: GarageView, mainView: MainView): void {
+    if (event instanceof Event) {
+      const targetElement = event.target as HTMLButtonElement;
+      this.makeGarageButtonDisabled(targetElement);
+      mainView.redrawContent(garageView);
+      changeElementDisabling('.reset', false);
+    } else {
+      mainView.redrawContent(garageView);
+      changeElementDisabling('.reset', false);
+    }
+  }
+
+  handlerWinnersButton(event: Event | string, winnersView: WinnersView, mainView: MainView): void {
+    if (event instanceof Event) {
+      const targetElement = event.target as HTMLButtonElement;
+      this.makeWinnersButtonDisabled(targetElement);
+      definePaginationActivity(winnersView);
+      mainView.redrawContent(winnersView);
+    } else {
+      definePaginationActivity(winnersView);
+      mainView.redrawContent(winnersView);
+    }
   }
 
   makeGarageButtonDisabled(targetElement: HTMLButtonElement): void {

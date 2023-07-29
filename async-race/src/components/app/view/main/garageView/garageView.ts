@@ -12,6 +12,7 @@ import {
 
   ParametersElementCreator,
   ParametersInputCreator,
+  ParametersMoving,
   WinnerData,
 } from '../../../../../types/types';
 import clearInputValue from '../../../../functions/clearInputValue';
@@ -27,6 +28,8 @@ const DEFAULT_COLOR = '#000000';
 const COUNT_CARS_PAGE = 7;
 const COUNT_CAR_MODELS = 10;
 const WIDTH_CAR = 60;
+const INTERVAL = 10;
+const GENERATE_COUNT_CARS = 100;
 
 export default class GarageView extends View {
   [key: string]: unknown;
@@ -399,56 +402,73 @@ export default class GarageView extends View {
     }
   }
 
-  // eslint-disable-next-line max-lines-per-function
   async handlerMovingButton(target: HTMLElement): Promise<void> {
     this.changeElementsDisablingMoving();
     (target as HTMLElement).setAttribute('disabled', '');
-    const parent = (target as HTMLElement).closest('.block-garage');
-    const stoppingButton = parent?.querySelector('.block-garage__button_stopping');
+    const parent = (target as HTMLElement).closest('.block-garage') as HTMLElement | null;
+    const stoppingButton = parent?.querySelector('.block-garage__button_stopping') as HTMLButtonElement | null | undefined;
+    let parameters: undefined | ParametersMoving;
+    if (parent && stoppingButton) {
+      parameters = this.getParametersMoving(parent, stoppingButton);
+    }
+    let parametersMoving;
+    let time;
+    try {
+      if (parameters?.garageBlockId) {
+        parametersMoving = await GarageView.startEngine(+parameters.garageBlockId, 'started');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    if (parametersMoving) {
+      time = (parametersMoving.data.distance) / (parametersMoving.data.velocity);
+    }
+    let oneStep: number = 0;
+    if (parameters?.roadLength && time) {
+      oneStep = parameters.roadLength / (time / INTERVAL);
+    }
+    let carAnimation;
+    if (parameters) {
+      carAnimation = this.setCarAnimation(parameters, oneStep);
+    }
+    stoppingButton?.setAttribute('name', (carAnimation as NodeJS.Timer).toString());
+    try {
+      if (parameters?.garageBlockId) {
+        await GarageView.startEngine(+parameters.garageBlockId, 'drive');
+      }
+    } catch {
+      clearInterval(carAnimation);
+    }
+  }
+
+  getParametersMoving(parent: HTMLElement, stoppingButton: HTMLButtonElement): ParametersMoving {
     let garageBlockId;
     let svgElement: SVGSVGElement | undefined | null;
     let roadLength: number = 0;
     if (parent && stoppingButton instanceof HTMLButtonElement) {
       garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
       const garageBlock = parent.querySelector('.block-garage__road-container') as HTMLDivElement;
-      stoppingButton.disabled = false;
+      stoppingButton.removeAttribute('disabled');
       svgElement = garageBlock?.querySelector('svg');
       const garageBlockOffsetWidth = garageBlock?.offsetWidth;
       if (garageBlockOffsetWidth) {
         roadLength = garageBlockOffsetWidth - WIDTH_CAR;
       }
     }
-    let parametersMoving;
-    try {
-      if (garageBlockId) {
-        parametersMoving = await GarageView.startEngine(+garageBlockId, 'started');
-      }
-    } catch (error) {
-      console.log(error);
-    }
-    let time;
-    if (parametersMoving) {
-      time = (parametersMoving.data.distance) / (parametersMoving.data.velocity);
-    }
-    let oneStep: number;
-    if (roadLength && time) {
-      oneStep = roadLength / (time / 10);
-    }
+    const result = { garageBlockId, svgElement, roadLength };
+    return result;
+  }
+
+  setCarAnimation(parameters: ParametersMoving, oneStep: number): NodeJS.Timer {
+    const newParameters = parameters;
     let startPosition = 0;
     const carAnimation = setInterval(() => {
-      if ((startPosition < roadLength) && svgElement) {
+      if (newParameters?.svgElement && (startPosition < newParameters?.roadLength)) {
         startPosition += oneStep;
-        svgElement.style.left = `${startPosition}px`;
+        newParameters.svgElement.style.left = `${startPosition}px`;
       }
-    }, 10);
-    stoppingButton?.setAttribute('name', (carAnimation as unknown as number).toString());
-    try {
-      if (garageBlockId) {
-        await GarageView.startEngine(+garageBlockId, 'drive');
-      }
-    } catch {
-      clearInterval(carAnimation);
-    }
+    }, INTERVAL);
+    return carAnimation;
   }
 
   changeElementsDisablingMoving(): void {
@@ -703,7 +723,7 @@ export default class GarageView extends View {
               });
             const inputsArr = document.querySelectorAll('input');
             inputsArr[2].value = '';
-            inputsArr[3].value = '#000000';
+            inputsArr[3].value = DEFAULT_COLOR;
             [targetElement, inputsArr[2], inputsArr[3]].forEach((el) => {
               const newEl = el;
               if (newEl) {
@@ -761,7 +781,7 @@ export default class GarageView extends View {
             const targetElement = event.target as HTMLButtonElement;
             targetElement.disabled = true;
             this.raceBlock?.deleteContent();
-            const arr = new Array(100).fill(1);
+            const arr = new Array(GENERATE_COUNT_CARS).fill(1);
             const requestsResult = arr.map(async () => {
               const modelCar = GarageView.getRandomNameCar(carBrands, carModels);
               const colorCar = GarageView.getRandomColor();

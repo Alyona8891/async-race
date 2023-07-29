@@ -94,7 +94,8 @@ export interface ParametersResultBlock {
   timeWinner: number,
 }
 
-export interface ParamesResponseBlock {
-  data: Promise<DataDrive>;
-  id: number;
+export interface ParametersMoving {
+  garageBlockId: string | undefined,
+  svgElement: SVGSVGElement | undefined | null,
+  roadLength: number,
 }
