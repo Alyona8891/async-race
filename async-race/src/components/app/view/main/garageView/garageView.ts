@@ -9,6 +9,7 @@ import {
   DataGetCars,
   DataOneCar,
   GarageViewData,
+
   ParametersElementCreator,
   ParametersInputCreator,
   WinnerData,
@@ -22,7 +23,14 @@ import './garage.css';
 import RaceBlockView from './raceBlockView/raceBlockView';
 import clearAllIntervals from '../../../../functions/clearAllIntervals';
 
+const DEFAULT_COLOR = '#000000';
+const COUNT_CARS_PAGE = 7;
+const COUNT_CAR_MODELS = 10;
+const WIDTH_CAR = 60;
+
 export default class GarageView extends View {
+  [key: string]: unknown;
+
   creatingField: string;
 
   updatingField: string;
@@ -64,9 +72,9 @@ export default class GarageView extends View {
     this.buttonNext = null;
     this.buttonPrev = null;
     this.creatingField = '';
-    this.creatingFieldColor = '#000000';
+    this.creatingFieldColor = DEFAULT_COLOR;
     this.updatingField = '';
-    this.updatingFieldColor = '#000000';
+    this.updatingFieldColor = DEFAULT_COLOR;
     this.updatingCarId = '';
     this.currentPage = 1;
     this.maxPage = 1;
@@ -101,7 +109,7 @@ export default class GarageView extends View {
 
   handler(event: Event, inputField: string): void {
     if (event.target instanceof HTMLInputElement && !event.target.hasAttribute('type')) {
-      this[inputField] = event.target.value;
+      (this as GarageView)[inputField] = event.target.value;
     }
     if (event.target instanceof HTMLInputElement && event.target.hasAttribute('type')) {
       this[`${inputField}Color`] = event.target.value;
@@ -111,13 +119,13 @@ export default class GarageView extends View {
     }
   }
 
-  static async getCars(currentPage: number): Promise<DataGetCars> {
+  static async getCars(currentPage: number): Promise<DataGetCars | undefined> {
     let result;
     try {
-      const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=7`);
+      const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=${COUNT_CARS_PAGE}`);
       const data = await response.json();
       const countCars = Number(response.headers.get('X-Total-Count'));
-      const maxPage = Math.ceil(countCars / 7);
+      const maxPage = Math.ceil(countCars / COUNT_CARS_PAGE);
       result = { data, countCars, maxPage };
       return result;
     } catch (error) {
@@ -126,7 +134,7 @@ export default class GarageView extends View {
     return result;
   }
 
-  static async getOneCar(idCar: string): Promise<DataOneCar> {
+  static async getOneCar(idCar: number): Promise<DataOneCar> {
     let data;
     try {
       const response = await fetch(`${baseUrl}${path.garage}/${idCar}`);
@@ -158,7 +166,10 @@ export default class GarageView extends View {
         this.raceBlock = raceBlock;
         this.maxPage = parametersRaceBlock.maxPage;
       }
-      this.elementCreator?.addInnerElement(await raceBlock.getElementCreator());
+      const raceBlockElement = raceBlock?.getElementCreator();
+      if (raceBlockElement) {
+        this.elementCreator?.addInnerElement(raceBlockElement);
+      }
       if (this.buttonPrev && this.buttonNext) {
         this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
       }
@@ -203,7 +214,7 @@ export default class GarageView extends View {
     return car;
   }
 
-  static async deleteCar(id: string): Promise<object> {
+  static async deleteCar(id: number): Promise<object> {
     let carDeleted;
     try {
       const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
@@ -228,8 +239,8 @@ export default class GarageView extends View {
 
   static getRandomNameCar(arr1: string[], arr2: string[]): string {
     let nameCar = '';
-    nameCar += arr1[Math.floor(Math.random() * 10)];
-    nameCar += arr2[Math.floor(Math.random() * 10)];
+    nameCar += arr1[Math.floor(Math.random() * COUNT_CAR_MODELS)];
+    nameCar += arr2[Math.floor(Math.random() * COUNT_CAR_MODELS)];
     return nameCar;
   }
 
@@ -336,18 +347,22 @@ export default class GarageView extends View {
 
   handlerDeleteButton(target: HTMLElement): void {
     const parent = (target).closest('.block-garage');
-    let garageBlockId;
+    let garageBlockId: string | undefined;
     if (parent) {
       garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
     }
-    GarageView.deleteCar(garageBlockId)
-      .then(() => {
-        GarageView.deleteWinner(garageBlockId);
-      }).then(() => {
-        this.raceBlock?.deleteContent();
-      }).then(() => {
-        this.createGarageView(this.currentPage);
-      });
+    if (garageBlockId) {
+      GarageView.deleteCar(+garageBlockId)
+        .then(() => {
+          if (garageBlockId) {
+            GarageView.deleteWinner(+garageBlockId);
+          }
+        }).then(() => {
+          this.raceBlock?.deleteContent();
+        }).then(() => {
+          this.createGarageView(this.currentPage);
+        });
+    }
   }
 
   handlerSelectButton(target: HTMLElement): void {
@@ -361,7 +376,7 @@ export default class GarageView extends View {
     }
     if (parent) {
       garageBlock = parent.querySelector('.block-garage__road-container');
-      const svgElement = garageBlock.querySelector('svg > g');
+      const svgElement = garageBlock?.querySelector('svg > g');
       svgElementFill = (svgElement as SVGElement).getAttribute('fill');
     }
     if (parent) {
@@ -374,47 +389,63 @@ export default class GarageView extends View {
       updateButton.disabled = false;
     }
     inputsArr[2].disabled = false;
-    inputsArr[2].value = nameCar;
-    this.updatingField = nameCar;
-    inputsArr[3].value = svgElementFill;
-    inputsArr[3].disabled = false;
-    this.updatingFieldColor = svgElementFill;
-    this.updatingCarId = garageBlockId;
+    if (nameCar && svgElementFill && garageBlockId) {
+      inputsArr[2].value = nameCar;
+      this.updatingField = nameCar;
+      inputsArr[3].value = svgElementFill;
+      inputsArr[3].disabled = false;
+      this.updatingFieldColor = svgElementFill;
+      this.updatingCarId = garageBlockId;
+    }
   }
 
+  // eslint-disable-next-line max-lines-per-function
   async handlerMovingButton(target: HTMLElement): Promise<void> {
     this.changeElementsDisablingMoving();
     (target as HTMLElement).setAttribute('disabled', '');
     const parent = (target as HTMLElement).closest('.block-garage');
     const stoppingButton = parent?.querySelector('.block-garage__button_stopping');
     let garageBlockId;
-    let svgElement;
-    let roadLength;
+    let svgElement: SVGSVGElement | undefined | null;
+    let roadLength: number = 0;
     if (parent && stoppingButton instanceof HTMLButtonElement) {
       garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
-      const garageBlock = parent.querySelector('.block-garage__road-container');
+      const garageBlock = parent.querySelector('.block-garage__road-container') as HTMLDivElement;
       stoppingButton.disabled = false;
       svgElement = garageBlock?.querySelector('svg');
-      roadLength = (garageBlock as HTMLElement).offsetWidth - 60;
+      const garageBlockOffsetWidth = garageBlock?.offsetWidth;
+      if (garageBlockOffsetWidth) {
+        roadLength = garageBlockOffsetWidth - WIDTH_CAR;
+      }
     }
     let parametersMoving;
     try {
-      parametersMoving = await GarageView.startEngine(garageBlockId, 'started');
+      if (garageBlockId) {
+        parametersMoving = await GarageView.startEngine(+garageBlockId, 'started');
+      }
     } catch (error) {
       console.log(error);
     }
-    const time = (parametersMoving.data.distance) / (parametersMoving.data.velocity);
-    const oneStep = roadLength / (time / 10);
+    let time;
+    if (parametersMoving) {
+      time = (parametersMoving.data.distance) / (parametersMoving.data.velocity);
+    }
+    let oneStep: number;
+    if (roadLength && time) {
+      oneStep = roadLength / (time / 10);
+    }
     let startPosition = 0;
     const carAnimation = setInterval(() => {
-      if (startPosition < roadLength) {
+      if ((startPosition < roadLength) && svgElement) {
         startPosition += oneStep;
-        (svgElement as HTMLElement).style.left = `${startPosition}px`;
+        svgElement.style.left = `${startPosition}px`;
       }
     }, 10);
     stoppingButton?.setAttribute('name', (carAnimation as unknown as number).toString());
     try {
-      await GarageView.startEngine(garageBlockId, 'drive');
+      if (garageBlockId) {
+        await GarageView.startEngine(+garageBlockId, 'drive');
+      }
     } catch {
       clearInterval(carAnimation);
     }
@@ -445,20 +476,22 @@ export default class GarageView extends View {
     const parent = (target as HTMLElement).closest('.block-garage');
     const movingButton = parent?.querySelector('.block-garage__button_moving');
     let garageBlockId;
-    let svgElement;
+    let svgElement: SVGSVGElement | null | undefined;
     if (parent) {
       garageBlockId = parent.querySelector('.block-garage__road-container')?.id;
       const garageBlock = parent.querySelector('.block-garage__road-container');
       svgElement = garageBlock?.querySelector('svg');
     }
-    await GarageView.startEngine(garageBlockId, 'stopped').then(() => {
-      const intervalId = (target as HTMLElement).getAttribute('name');
-      if (intervalId) {
-        clearInterval(+intervalId);
-      }
-      svgElement.style.left = '0px';
-      (movingButton as HTMLButtonElement).disabled = false;
-    });
+    if (garageBlockId) {
+      await GarageView.startEngine(+garageBlockId, 'stopped').then(() => {
+        const intervalId = (target as HTMLElement).getAttribute('name');
+        if (intervalId && svgElement && movingButton) {
+          clearInterval(+intervalId);
+          svgElement.style.left = '0px';
+          (movingButton as HTMLButtonElement).disabled = false;
+        }
+      });
+    }
   }
 
   changeElementsDisablingStopping(): void {
@@ -488,13 +521,13 @@ export default class GarageView extends View {
 
   handlerButtonRace(): void {
     const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
-    const roadLength = (roadContainerElementsArr[0] as HTMLElement).offsetWidth - 60;
-    const arrElementsId: string[] = [];
+    const roadLength = (roadContainerElementsArr[0] as HTMLElement).offsetWidth - WIDTH_CAR;
+    const arrElementsId: number[] = [];
     const svgElementsList = document.querySelectorAll(
       '.block-garage__road-container > svg',
     ) as unknown as HTMLElement[];
-    roadContainerElementsArr.forEach((el) => arrElementsId.push(el.id));
-    const arrPromisesStarted = arrElementsId.map(
+    roadContainerElementsArr.forEach((el) => arrElementsId.push(+el.id));
+    const arrPromisesStarted: Promise<DataDriveResult>[] | undefined = arrElementsId.map(
       (el) => new Promise((resolve, reject) => {
         changeElementDisabling('button', true);
         changeElementDisabling('.page-header__link', true);
@@ -503,13 +536,11 @@ export default class GarageView extends View {
           method: 'PATCH',
         })
           .then((response) => response.json())
-          .then((dataResp) => {
+          .then((dataResp: DataDrive): DataDriveResult => {
             changeElementDisabling('.page-header__link', false);
             return { data: dataResp, id: el };
           })
-          .then((data) => {
-            resolve(data);
-          })
+          .then((data: DataDriveResult) => resolve(data))
           .catch((error) => {
             reject(error);
           });
@@ -518,9 +549,14 @@ export default class GarageView extends View {
     this.raceCars(arrPromisesStarted, arrElementsId, svgElementsList, roadLength);
   }
 
-  async raceCars(arrPromisesStarted, arrElementsId, svgElementsList, roadLength): Promise<void> {
-    Promise.all(arrPromisesStarted).then(async (values) => {
-      const requestsResult = arrElementsId.map(async (el, i) => {
+  async raceCars(
+    arrPromisesStarted: Promise<DataDriveResult>[],
+    arrElementsId: number[],
+    svgElementsList: Element[],
+    roadLength: number,
+  ): Promise<void> {
+    Promise.all(arrPromisesStarted as Promise<DataDriveResult>[]).then(async (values) => {
+      const requestsResult = arrElementsId.map(async (el: number, i: number) => {
         let startPosition = 0;
         const newEl = svgElementsList[i];
         const timeEl = (values[i] as DataDriveResult).data.distance
@@ -552,13 +588,13 @@ export default class GarageView extends View {
     });
   }
 
-  async getWinnerData(requestsResult): Promise<void> {
+  async getWinnerData(requestsResult: Promise<DataDriveResult>[]): Promise<void> {
     Promise.any(requestsResult)
       .then(async (data) => {
         changeElementDisabling('.reset', false);
         const idWinner = data.id;
         const winnerTime = data.time;
-        const dataOneCar = await GarageView.getOneCar(idWinner);
+        const dataOneCar = await GarageView.getOneCar(+idWinner);
         return { idWinner: +idWinner, winnerTime, dataOneCar };
       })
       .then((data) => {
@@ -655,9 +691,9 @@ export default class GarageView extends View {
       tagClasses: ['garage-block__input-block', 'input-update'],
       textContent: '',
       callback: {
-        keyup: (event): void => this.handler(event, 'updatingField'),
-        change: (event): void => this.handler(event, 'updatingField'),
-        click: (event): void => {
+        keyup: (event: Event): void => this.handler(event, 'updatingField'),
+        change: (event: Event): void => this.handler(event, 'updatingField'),
+        click: (event: Event): void => {
           const targetElement = event.target;
           if (targetElement instanceof HTMLButtonElement) {
             GarageView.updateCar(this.updatingCarId, this.updatingField, this.updatingFieldColor)

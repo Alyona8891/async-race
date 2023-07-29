@@ -60,7 +60,7 @@ export type WinnerData = {
 
 export interface DataDriveResult {
   data: DataDrive;
-  id: string;
+  id: number;
   time?: string;
 }
 
@@ -92,4 +92,9 @@ export interface ParametersResultBlock {
   nameWinner: string,
   winsWinner: number,
   timeWinner: number,
+}
+
+export interface ParamesResponseBlock {
+  data: Promise<DataDrive>;
+  id: number;
 }

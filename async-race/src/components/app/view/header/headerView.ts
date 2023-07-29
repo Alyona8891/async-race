@@ -49,6 +49,7 @@ export default class HeaderView extends View {
     return creatorNav;
   }
 
+  // eslint-disable-next-line max-lines-per-function
   createLinkElements(
     mainView: MainView,
     garageView: GarageView,
@@ -59,22 +60,32 @@ export default class HeaderView extends View {
       {
         name: NAME_PAGES.garage.toUpperCase(),
         callBack: {
-          click: (event): void => {
-            const targetElement = event.target as HTMLButtonElement;
-            this.makeGarageButtonDisabled(targetElement);
-            mainView.redrawContent(garageView);
-            changeElementDisabling('.reset', false);
+          click: (event: Event | string): void => {
+            if (event instanceof Event) {
+              const targetElement = event.target as HTMLButtonElement;
+              this.makeGarageButtonDisabled(targetElement);
+              mainView.redrawContent(garageView);
+              changeElementDisabling('.reset', false);
+            } else {
+              mainView.redrawContent(garageView);
+              changeElementDisabling('.reset', false);
+            }
           },
         },
       },
       {
         name: NAME_PAGES.winners.toUpperCase(),
         callBack: {
-          click: (event): void => {
-            const targetElement = event.target as HTMLButtonElement;
-            this.makeWinnersButtonDisabled(targetElement);
-            definePaginationActivity(winnersView);
-            mainView.redrawContent(winnersView);
+          click: (event: Event | string): void => {
+            if (event instanceof Event) {
+              const targetElement = event.target as HTMLButtonElement;
+              this.makeWinnersButtonDisabled(targetElement);
+              definePaginationActivity(winnersView);
+              mainView.redrawContent(winnersView);
+            } else {
+              definePaginationActivity(winnersView);
+              mainView.redrawContent(winnersView);
+            }
           },
         },
       },

@@ -1,5 +1,5 @@
 import './winners.css';
-import { ParametersElementCreator, WinnersData } from '../../../../../types/types';
+import { ParametersElementCreator, ParametersResultBlock, WinnersData } from '../../../../../types/types';
 import View from '../../view';
 import ElementCreator from '../../../../units/elementCreator';
 import { baseUrl, path } from '../../../../../data/data';
@@ -158,7 +158,7 @@ export default class WinnersView extends View {
     currentPage: number,
     sortParameter: string,
     orderParameter: string,
-  ): Promise<WinnersData> {
+  ): Promise<WinnersData | undefined> {
     let resultData;
     try {
       const response = await fetch(
@@ -184,7 +184,8 @@ export default class WinnersView extends View {
     try {
       this.deleteContent();
       const parameters = await WinnersView.getWinners(currentPage, sortParameter, orderParameter);
-      const parametersResultBlock = parameters.dataWinners.map(async (el) => {
+      const parametersResultBlock:
+      Promise<ParametersResultBlock>[] | undefined = parameters?.dataWinners.map(async (el) => {
         const dataOneCar = await ResultsBlockView.getOneCar(el.id);
         return {
           colorWinner: dataOneCar.color,
@@ -193,11 +194,11 @@ export default class WinnersView extends View {
           timeWinner: el.time,
         };
       });
-      const countCarsData = parameters.countWinners;
-      const maxPageData = parameters.maxPage;
-      Promise.all(parametersResultBlock)
+      const countCarsData = parameters?.countWinners;
+      const maxPageData = parameters?.maxPage;
+      Promise.all(parametersResultBlock as Promise<ParametersResultBlock>[])
         .then((data) => {
-          if (countCarsData) {
+          if (countCarsData && maxPageData) {
             this.resultsBlock = new ResultsBlockView(
               data,
               countCarsData,
