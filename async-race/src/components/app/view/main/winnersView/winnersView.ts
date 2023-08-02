@@ -1,5 +1,5 @@
 import './winners.css';
-import { ParametersElementCreator, ParametersResultBlock, WinnersData } from '../../../../../types/types';
+import { ParametersElementCreator, ParametersResultBlock, Winners } from '../../../../../types/types';
 import View from '../../view';
 import ElementCreator from '../../../../units/elementCreator';
 import { baseUrl, path } from '../../../../../data/data';
@@ -31,10 +31,10 @@ export default class WinnersView extends View {
         click: async (event: Event): Promise<void | Record<string, string>> => {
           const targetElement = event.target;
           if ((targetElement as HTMLElement).classList.contains('wins-sort')) {
-            this.handlerSortWins();
+            this.handleSortWins();
           }
           if ((targetElement as HTMLElement).classList.contains('time-sort')) {
-            this.handlerSortTime();
+            this.handleSortTime();
           }
         },
       },
@@ -84,12 +84,12 @@ export default class WinnersView extends View {
     this.createResultsView(this.currentPage, 'time', 'DESC', this.winsSort, this.timeSort)
       .then(() => {
         if (this.buttonPrev && this.buttonNext) {
-          this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
+          this.changeBlockingBtns(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
         }
       });
   }
 
-  handlerSortWins(): void {
+  handleSortWins(): void {
     this.timeSort = 'Best time(seconds)';
     if (this.winsSort === 'Wins') {
       this.winsSort = '↓ Wins';
@@ -124,7 +124,7 @@ export default class WinnersView extends View {
     }
   }
 
-  handlerSortTime(): void {
+  handleSortTime(): void {
     this.winsSort = 'Wins';
     if (this.timeSort === 'Best time(seconds)') {
       this.timeSort = '↓ Best time(seconds)';
@@ -160,7 +160,7 @@ export default class WinnersView extends View {
     currentPage: number,
     sortParameter: string,
     orderParameter: string,
-  ): Promise<WinnersData | undefined> {
+  ): Promise<Winners | undefined> {
     let resultData;
     try {
       const response = await fetch(
@@ -188,10 +188,10 @@ export default class WinnersView extends View {
       const parameters = await WinnersView.getWinners(currentPage, sortParameter, orderParameter);
       const parametersResultBlock:
       Promise<ParametersResultBlock>[] | undefined = parameters?.dataWinners.map(async (el) => {
-        const dataOneCar = await ResultsBlockView.getOneCar(el.id);
+        const dataCar = await ResultsBlockView.getCar(el.id);
         return {
-          colorWinner: dataOneCar.color,
-          nameWinner: dataOneCar.name,
+          colorWinner: dataCar.color,
+          nameWinner: dataCar.name,
           winsWinner: el.wins,
           timeWinner: el.time,
         };
@@ -237,7 +237,7 @@ export default class WinnersView extends View {
       this.createResultsView(this.currentPage, 'time', 'ASC', this.winsSort, this.timeSort);
     }
     if (this.buttonPrev && this.buttonNext) {
-      this.checkStatusActive(
+      this.changeBlockingBtns(
         this.buttonPrev,
         this.buttonNext,
         this.maxPage,

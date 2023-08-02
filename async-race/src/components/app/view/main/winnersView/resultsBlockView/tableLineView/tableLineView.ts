@@ -1,11 +1,11 @@
-import './oneTableLine.css';
+import './tableLine.css';
 import { ParametersElementCreator } from '../../../../../../../types/types';
 import ElementCreator from '../../../../../../units/elementCreator';
 import View from '../../../../view';
 import { carElementString } from '../../../../../../../data/data';
 import changeFillSize from '../../../../../../functions/changeFill';
 
-export default class OneTableLineView extends View {
+export default class TableLineView extends View {
   constructor(number: number, color: string, nameCar: string, winsCount: number, time: number) {
     const parameters: ParametersElementCreator = {
       tag: 'div',

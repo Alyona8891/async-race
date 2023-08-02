@@ -1,5 +1,5 @@
 import {
-  CallbackObject, FunctionObject, ParametersElementCreator, ParametersInputCreator,
+  CallbackObject, FunctionObject, ParametersElementCreator,
 } from '../../types/types';
 
 export default class ElementCreator {
@@ -21,7 +21,7 @@ export default class ElementCreator {
     this.createElement(parameters);
   }
 
-  createElement(parameters: ParametersElementCreator | ParametersInputCreator): void {
+  createElement(parameters: ParametersElementCreator | ParametersElementCreator): void {
     this.element = document.createElement(parameters.tag);
     this.setClasses(parameters.tagClasses);
     this.setTextContent(parameters.textContent);
@@ -30,14 +30,14 @@ export default class ElementCreator {
     }
   }
 
-  getCreatedElement(): Element | HTMLElement | undefined {
+  getCreatedElement(): Element | HTMLElement | null {
     if (this.element) {
       return this.element;
     }
-    return undefined;
+    return null;
   }
 
-  addInnerElement(element: Element | ElementCreator | undefined): void {
+  addInnerElement(element: Element | ElementCreator | undefined | null): void {
     if (element instanceof ElementCreator) {
       const createdElement = element.getCreatedElement();
       if (createdElement) {

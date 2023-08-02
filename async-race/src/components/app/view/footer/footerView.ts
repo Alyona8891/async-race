@@ -25,7 +25,7 @@ export default class FooterView extends View {
   }
 
   configView(): void {
-    let createdElement: HTMLElement | Element | undefined;
+    let createdElement: HTMLElement | Element | null = null;
     if (this.elementCreator) {
       createdElement = this.elementCreator.getCreatedElement();
     }

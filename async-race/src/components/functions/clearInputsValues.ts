@@ -1,6 +1,6 @@
 const DEFAULT_COLOR = '#000000';
 
-function clearInputValue(targetElement: HTMLElement): void {
+function clearInputsValues(targetElement: HTMLElement): void {
   const parent = (targetElement as HTMLElement).closest('div');
   const input = parent?.querySelectorAll('input');
   input?.forEach((el) => {
@@ -12,4 +12,4 @@ function clearInputValue(targetElement: HTMLElement): void {
     }
   });
 }
-export default clearInputValue;
+export default clearInputsValues;

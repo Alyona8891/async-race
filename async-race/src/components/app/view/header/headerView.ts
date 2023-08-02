@@ -60,7 +60,7 @@ export default class HeaderView extends View {
         name: NAME_PAGES.garage.toUpperCase(),
         callBack: {
           click: (event: Event | string): void => {
-            this.handlerGarageButton(event, garageView, mainView);
+            this.handleGarageButton(event, garageView, mainView);
           },
         },
       },
@@ -68,7 +68,7 @@ export default class HeaderView extends View {
         name: NAME_PAGES.winners.toUpperCase(),
         callBack: {
           click: (event: Event | string): void => {
-            this.handlerWinnersButton(event, winnersView, mainView);
+            this.handleWinnersButton(event, winnersView, mainView);
           },
         },
       },
@@ -84,7 +84,7 @@ export default class HeaderView extends View {
     });
   }
 
-  handlerGarageButton(event: Event | string, garageView: GarageView, mainView: MainView): void {
+  handleGarageButton(event: Event | string, garageView: GarageView, mainView: MainView): void {
     if (event instanceof Event) {
       const targetElement = event.target as HTMLButtonElement;
       this.makeGarageButtonDisabled(targetElement);
@@ -96,7 +96,7 @@ export default class HeaderView extends View {
     }
   }
 
-  handlerWinnersButton(event: Event | string, winnersView: WinnersView, mainView: MainView): void {
+  handleWinnersButton(event: Event | string, winnersView: WinnersView, mainView: MainView): void {
     if (event instanceof Event) {
       const targetElement = event.target as HTMLButtonElement;
       this.makeWinnersButtonDisabled(targetElement);

@@ -2,20 +2,15 @@ import {
   baseUrl, carBrands, carModels, path,
 } from '../../../../../data/data';
 import {
-  BodyRequest,
-  BodyWinnerData,
   DataDrive,
   DataDriveResult,
-  DataGetCars,
-  DataOneCar,
-  GarageViewData,
-
+  GarageData,
+  Car,
   ParametersElementCreator,
-  ParametersInputCreator,
-  ParametersMoving,
-  WinnerData,
+  Winner,
+  MoveParameters,
 } from '../../../../../types/types';
-import clearInputValue from '../../../../functions/clearInputValue';
+import clearInputsValues from '../../../../functions/clearInputsValues';
 import changeElementDisabling from '../../../../functions/changeElementDisabling';
 import ElementCreator from '../../../../units/elementCreator';
 import InputCreator from '../../../../units/inputCreator/inputCreator';
@@ -30,6 +25,7 @@ const COUNT_CAR_MODELS = 10;
 const WIDTH_CAR = 60;
 const INTERVAL = 10;
 const GENERATE_COUNT_CARS = 100;
+const TIME_DIMINUTIVE = 1000;
 
 export default class GarageView extends View {
   [key: string]: unknown;
@@ -64,7 +60,7 @@ export default class GarageView extends View {
       callback: {
         click: async (event: Event): Promise<void | Record<string, string>> => {
           const { target } = event;
-          this.doAccordingConditions(target as HTMLElement);
+          this.handleAccordingTypeTarget(target as HTMLElement);
           return {};
         },
       },
@@ -103,14 +99,14 @@ export default class GarageView extends View {
     this.createGarageView(this.currentPage)
       .then(() => {
         if (this.buttonPrev && this.buttonNext) {
-          this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
+          this.changeBlockingBtns(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
         }
       });
     const modalWindow = this.addCreatedElement('div', ['garage-block__modal-window', 'garage-block__modal-window_unvisible'], '', this.elementCreator);
     this.modalWindow = modalWindow.getCreatedElement() as HTMLElement;
   }
 
-  handler(event: Event, inputField: string): void {
+  handleInputField(event: Event, inputField: string): void {
     if (event.target instanceof HTMLInputElement && !event.target.hasAttribute('type')) {
       (this as GarageView)[inputField] = event.target.value;
     }
@@ -122,14 +118,14 @@ export default class GarageView extends View {
     }
   }
 
-  static async getCars(currentPage: number): Promise<DataGetCars | undefined> {
-    let result;
+  static async getCars(currentPage: number): Promise<GarageData | null> {
+    let result: GarageData | null = null;
     try {
       const response = await fetch(`${baseUrl}${path.garage}?_page=${currentPage}&_limit=${COUNT_CARS_PAGE}`);
-      const data = await response.json();
+      const dataCarArr: Car[] = await response.json();
       const countCars = Number(response.headers.get('X-Total-Count'));
       const maxPage = Math.ceil(countCars / COUNT_CARS_PAGE);
-      result = { data, countCars, maxPage };
+      result = { data: dataCarArr.length ? dataCarArr : null, countCars, maxPage };
       return result;
     } catch (error) {
       console.log(error);
@@ -137,8 +133,8 @@ export default class GarageView extends View {
     return result;
   }
 
-  static async getOneCar(idCar: number): Promise<DataOneCar> {
-    let data;
+  static async getCar(idCar: number): Promise<Car | null> {
+    let data: Car | null = null;
     try {
       const response = await fetch(`${baseUrl}${path.garage}/${idCar}`);
       data = await response.json();
@@ -153,14 +149,14 @@ export default class GarageView extends View {
     try {
       changeElementDisabling('button', true);
       changeElementDisabling('input', true);
-      const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageViewData;
+      const parametersRaceBlock = (await GarageView.getCars(this.currentPage)) as GarageData;
       changeElementDisabling('button', false);
       changeElementDisabling('input', false);
       changeElementDisabling('.block-garage__button_stopping', true);
       changeElementDisabling('.input-update input', true);
       changeElementDisabling('.input-update button', true);
       let raceBlock;
-      if (parametersRaceBlock.countCars) {
+      if (parametersRaceBlock.countCars && parametersRaceBlock.data) {
         raceBlock = new RaceBlockView(
           parametersRaceBlock.data,
           parametersRaceBlock.countCars,
@@ -174,14 +170,14 @@ export default class GarageView extends View {
         this.elementCreator?.addInnerElement(raceBlockElement);
       }
       if (this.buttonPrev && this.buttonNext) {
-        this.checkStatusActive(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
+        this.changeBlockingBtns(this.buttonPrev, this.buttonNext, this.maxPage, this.currentPage);
       }
     } catch (error) {
       console.log(error);
     }
   }
 
-  static async createCar(body: BodyRequest): Promise<DataOneCar> {
+  static async createCar(body: Omit<Car, 'id'>): Promise<Car> {
     let car;
     try {
       const response = await fetch(`${baseUrl}${path.garage}`, {
@@ -199,7 +195,7 @@ export default class GarageView extends View {
     return car;
   }
 
-  static async updateCar(id: string, name: string, color: string): Promise<DataOneCar> {
+  static async updateCar(id: string, name: string, color: string): Promise<Car> {
     let car;
     try {
       const response = await fetch(`${baseUrl}${path.garage}/${id}`, {
@@ -247,14 +243,14 @@ export default class GarageView extends View {
     return nameCar;
   }
 
-  static createBody(modelCar: string, colorCar: string): BodyRequest {
+  static createBody(modelCar: string, colorCar: string): Omit<Car, 'id'> {
     return { name: modelCar, color: colorCar };
   }
 
   static async startEngine(
     id: number,
     status: string,
-  ): Promise<DataDriveResult | { data: DataDrive; id: number }> {
+  ): Promise<DataDriveResult> {
     const response = await fetch(`${baseUrl}${path.engine}?id=${id}&status=${status}`, {
       method: 'PATCH',
     });
@@ -262,7 +258,7 @@ export default class GarageView extends View {
     return { data, id };
   }
 
-  static async createWinner(body: { id: number; wins: number; time: number }): Promise<WinnerData> {
+  static async createWinner(body: Winner): Promise<Winner> {
     let winner;
     try {
       const response = await fetch(`${baseUrl}${path.winners}`, {
@@ -280,11 +276,11 @@ export default class GarageView extends View {
     return winner;
   }
 
-  static createBodyWinner(idWin: number, winsWin: number, timeWin: number): BodyWinnerData {
+  static createBodyWinner(idWin: number, winsWin: number, timeWin: number): Winner {
     return { id: idWin, wins: winsWin, time: timeWin };
   }
 
-  static async getWinner(id: number): Promise<WinnerData> {
+  static async getWinner(id: number): Promise<Winner> {
     let winner;
     try {
       const response = await fetch(`${baseUrl}${path.winners}/${id}`);
@@ -296,7 +292,7 @@ export default class GarageView extends View {
     return winner;
   }
 
-  static async updateWinner(id: number, wins: number, time: number): Promise<WinnerData> {
+  static async updateWinner(id: number, wins: number, time: number): Promise<Winner> {
     let updateWinner;
     try {
       const response = await fetch(`${baseUrl}${path.winners}/${id}`, {
@@ -348,7 +344,7 @@ export default class GarageView extends View {
     }
   }
 
-  handlerDeleteButton(target: HTMLElement): void {
+  handleDeleteButton(target: HTMLElement): void {
     const parent = (target).closest('.block-garage');
     let garageBlockId: string | undefined;
     if (parent) {
@@ -368,7 +364,7 @@ export default class GarageView extends View {
     }
   }
 
-  handlerSelectButton(target: HTMLElement): void {
+  handleSelectButton(target: HTMLElement): void {
     const parent = (target as HTMLElement).closest('.block-garage');
     let garageBlockId;
     let garageBlock;
@@ -402,14 +398,14 @@ export default class GarageView extends View {
     }
   }
 
-  async handlerMovingButton(target: HTMLElement): Promise<void> {
-    this.changeElementsDisablingMoving();
+  async handleMovingButton(target: HTMLElement): Promise<void> {
+    this.changeElementsDisableOnMove();
     (target as HTMLElement).setAttribute('disabled', '');
     const parent = (target as HTMLElement).closest('.block-garage') as HTMLElement | null;
     const stoppingButton = parent?.querySelector('.block-garage__button_stopping') as HTMLButtonElement | null | undefined;
-    let parameters: undefined | ParametersMoving;
+    let parameters: undefined | MoveParameters;
     if (parent && stoppingButton) {
-      parameters = this.getParametersMoving(parent, stoppingButton);
+      parameters = this.getGarageBlockData(parent, stoppingButton);
     }
     let parametersMoving;
     let time;
@@ -441,7 +437,7 @@ export default class GarageView extends View {
     }
   }
 
-  getParametersMoving(parent: HTMLElement, stoppingButton: HTMLButtonElement): ParametersMoving {
+  getGarageBlockData(parent: HTMLElement, stoppingButton: HTMLButtonElement): MoveParameters {
     let garageBlockId;
     let svgElement: SVGSVGElement | undefined | null;
     let roadLength: number = 0;
@@ -459,7 +455,7 @@ export default class GarageView extends View {
     return result;
   }
 
-  setCarAnimation(parameters: ParametersMoving, oneStep: number): NodeJS.Timer {
+  setCarAnimation(parameters: MoveParameters, oneStep: number): NodeJS.Timer {
     const newParameters = parameters;
     let startPosition = 0;
     const carAnimation = setInterval(() => {
@@ -471,7 +467,7 @@ export default class GarageView extends View {
     return carAnimation;
   }
 
-  changeElementsDisablingMoving(): void {
+  changeElementsDisableOnMove(): void {
     changeElementDisabling('.garage-block__input-block button', true);
     changeElementDisabling('.garage-block > button', true);
     changeElementDisabling('.block-garage__select-button', true);
@@ -482,10 +478,10 @@ export default class GarageView extends View {
     changeElementDisabling('.input-update button', true);
   }
 
-  async handlerStoppingButton(target: HTMLElement): Promise<void> {
-    this.changeElementsDisablingStopping();
+  async handleStoppingButton(target: HTMLElement): Promise<void> {
+    this.changeElementsDisableOnStop();
     if (this.buttonPrev && this.buttonNext) {
-      this.checkStatusActive(
+      this.changeBlockingBtns(
         this.buttonPrev,
         this.buttonNext,
         this.maxPage,
@@ -514,7 +510,7 @@ export default class GarageView extends View {
     }
   }
 
-  changeElementsDisablingStopping(): void {
+  changeElementsDisableOnStop(): void {
     changeElementDisabling('.garage-block__input-block button', false);
     changeElementDisabling('.garage-block > button', false);
     changeElementDisabling('input', false);
@@ -524,28 +520,29 @@ export default class GarageView extends View {
     changeElementDisabling('.block-garage__delete-button', false);
   }
 
-  doAccordingConditions(target: HTMLElement): void {
+  handleAccordingTypeTarget(target: HTMLElement): void {
     if (target && (target as HTMLElement).classList.contains('block-garage__delete-button')) {
-      this.handlerDeleteButton(target as HTMLElement);
+      this.handleDeleteButton(target as HTMLElement);
     }
     if ((target as HTMLElement).classList.contains('block-garage__select-button')) {
-      this.handlerSelectButton(target as HTMLElement);
+      this.handleSelectButton(target as HTMLElement);
     }
     if ((target as HTMLElement).classList.contains('block-garage__button_moving')) {
-      this.handlerMovingButton(target as HTMLElement);
+      this.handleMovingButton(target as HTMLElement);
     }
     if ((target as HTMLElement).classList.contains('block-garage__button_stopping')) {
-      this.handlerStoppingButton(target as HTMLElement);
+      this.handleStoppingButton(target as HTMLElement);
     }
   }
 
-  handlerButtonRace(): void {
+  handleButtonRace(): void {
     const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
     const roadLength = (roadContainerElementsArr[0] as HTMLElement).offsetWidth - WIDTH_CAR;
     const arrElementsId: number[] = [];
     const svgElementsList = document.querySelectorAll(
       '.block-garage__road-container > svg',
-    ) as unknown as HTMLElement[];
+    ) as NodeList;
+    const svgElementsArr = Array.from(svgElementsList) as HTMLElement[];
     roadContainerElementsArr.forEach((el) => arrElementsId.push(+el.id));
     const arrPromisesStarted: Promise<DataDriveResult>[] | undefined = arrElementsId.map(
       (el) => new Promise((resolve, reject) => {
@@ -566,7 +563,7 @@ export default class GarageView extends View {
           });
       }),
     );
-    this.raceCars(arrPromisesStarted, arrElementsId, svgElementsList, roadLength);
+    this.raceCars(arrPromisesStarted, arrElementsId, svgElementsArr, roadLength);
   }
 
   async raceCars(
@@ -582,12 +579,12 @@ export default class GarageView extends View {
         const timeEl = (values[i] as DataDriveResult).data.distance
                               / (values[i] as DataDriveResult).data.velocity;
         const carAnimation = setInterval(() => {
-          const oneStep = roadLength / (timeEl / 10);
+          const oneStep = roadLength / (timeEl / INTERVAL);
           if (startPosition < roadLength) {
             startPosition += oneStep;
             (newEl as HTMLElement).style.left = `${startPosition}px`;
           }
-        }, 10);
+        }, INTERVAL);
         try {
           const result: DataDriveResult = (await GarageView.startEngine(
             +el,
@@ -596,7 +593,7 @@ export default class GarageView extends View {
           result.time = (
             (values[i] as DataDriveResult).data.distance
                                   / (values[i] as DataDriveResult).data.velocity
-                                  / 1000
+                                  / TIME_DIMINUTIVE
           ).toFixed(2);
           return result;
         } catch (error) {
@@ -614,21 +611,21 @@ export default class GarageView extends View {
         changeElementDisabling('.reset', false);
         const idWinner = data.id;
         const winnerTime = data.time;
-        const dataOneCar = await GarageView.getOneCar(+idWinner);
-        return { idWinner: +idWinner, winnerTime, dataOneCar };
+        const dataCar = await GarageView.getCar(idWinner);
+        return { idWinner, winnerTime, dataCar };
       })
       .then((data) => {
         if (data.winnerTime) {
           if (this.modalWindow && this.modalWindow instanceof HTMLElement) {
             this.modalWindow.classList.remove('garage-block__modal-window_unvisible');
-            this.modalWindow.textContent = `${data.dataOneCar.name} went first! Time: ${data.winnerTime}`;
+            this.modalWindow.textContent = `${data.dataCar?.name} went first! Time: ${data.winnerTime}`;
           }
-          GarageView.checkWinner(data.idWinner, +data.idWinner, +data.winnerTime);
+          GarageView.checkWinner(data.idWinner, data.idWinner, +data.winnerTime);
         }
       });
   }
 
-  handlerButtonReset(): void {
+  handleButtonReset(): void {
     const roadContainerElementsArr = document.querySelectorAll('.block-garage__road-container');
     const arrElementsId: string[] = [];
     const svgElementsList = document.querySelectorAll(
@@ -652,7 +649,7 @@ export default class GarageView extends View {
     Promise.all(requests).then(() => {
       this.changeElementsDisablingReset();
       if (this.buttonPrev && this.buttonNext) {
-        this.checkStatusActive(
+        this.changeBlockingBtns(
           this.buttonPrev,
           this.buttonNext,
           this.maxPage,
@@ -676,14 +673,14 @@ export default class GarageView extends View {
     changeElementDisabling('.input-update button', true);
   }
 
-  addBlockCreatingCar(): HTMLElement | Element | undefined {
-    const inputParameters: ParametersInputCreator = {
+  addBlockCreatingCar(): HTMLElement | Element | undefined | null {
+    const inputParameters: ParametersElementCreator = {
       tag: 'div',
       tagClasses: ['garage-block__input-block', 'input-create'],
       textContent: '',
       callback: {
-        keyup: (event) => this.handler(event, 'creatingField'),
-        change: (event) => this.handler(event, 'creatingField'),
+        keyup: (event) => this.handleInputField(event, 'creatingField'),
+        change: (event) => this.handleInputField(event, 'creatingField'),
         click: async (event) => {
           const targetElement = event.target as HTMLElement;
           if (targetElement instanceof HTMLButtonElement && this.creatingField) {
@@ -693,7 +690,7 @@ export default class GarageView extends View {
                 this.createGarageView(this.currentPage);
               }).then(() => {
                 this.creatingField = '';
-                clearInputValue(targetElement);
+                clearInputsValues(targetElement);
               });
           }
         },
@@ -705,14 +702,14 @@ export default class GarageView extends View {
     return inputBlock?.getCreatedElement();
   }
 
-  addBlockUpdatingCar(): HTMLElement | Element | undefined {
+  addBlockUpdatingCar(): HTMLElement | Element | undefined | null {
     const inputParameters = {
       tag: 'div',
       tagClasses: ['garage-block__input-block', 'input-update'],
       textContent: '',
       callback: {
-        keyup: (event: Event): void => this.handler(event, 'updatingField'),
-        change: (event: Event): void => this.handler(event, 'updatingField'),
+        keyup: (event: Event): void => this.handleInputField(event, 'updatingField'),
+        change: (event: Event): void => this.handleInputField(event, 'updatingField'),
         click: (event: Event): void => {
           const targetElement = event.target;
           if (targetElement instanceof HTMLButtonElement) {
@@ -747,7 +744,7 @@ export default class GarageView extends View {
       textContent: 'RACE',
       callback: {
         click: () => {
-          this.handlerButtonRace();
+          this.handleButtonRace();
         },
       },
     };
@@ -762,7 +759,7 @@ export default class GarageView extends View {
       textContent: 'RESET',
       callback: {
         click: () => {
-          this.handlerButtonReset();
+          this.handleButtonReset();
         },
       },
     };
@@ -791,7 +788,7 @@ export default class GarageView extends View {
             await this.createGarageView(this.currentPage);
             targetElement.disabled = false;
             if (this.buttonPrev && this.buttonNext) {
-              this.checkStatusActive(
+              this.changeBlockingBtns(
                 this.buttonPrev,
                 this.buttonNext,
                 this.maxPage,
@@ -821,7 +818,7 @@ export default class GarageView extends View {
             await this.createGarageView(this.currentPage)
               .then(() => {
                 if (this.buttonPrev && this.buttonNext) {
-                  this.checkStatusActive(
+                  this.changeBlockingBtns(
                     this.buttonPrev,
                     this.buttonNext,
                     this.maxPage,
@@ -851,7 +848,7 @@ export default class GarageView extends View {
             await this.createGarageView(this.currentPage)
               .then(() => {
                 if (this.buttonPrev && this.buttonNext) {
-                  this.checkStatusActive(
+                  this.changeBlockingBtns(
                     this.buttonPrev,
                     this.buttonNext,
                     this.maxPage,

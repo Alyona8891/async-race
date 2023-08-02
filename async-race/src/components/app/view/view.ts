@@ -8,11 +8,11 @@ export default class View {
     this.elementCreator = View.createView(parameters);
   }
 
-  getElementCreator(): Element | undefined {
+  getElementCreator(): Element | undefined | null {
     if (this.elementCreator) {
       return this.elementCreator.getCreatedElement();
     }
-    return undefined;
+    return null;
   }
 
   static createView(parameters: ParametersElementCreator): ElementCreator | null {
@@ -20,7 +20,7 @@ export default class View {
     return elementCreator;
   }
 
-  checkStatusActive(
+  changeBlockingBtns(
     buttonPrev: ElementCreator,
     buttonNext: ElementCreator,
     maxPage: number,

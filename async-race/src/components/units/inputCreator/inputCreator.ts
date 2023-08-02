@@ -1,9 +1,9 @@
 import './input.css';
-import { ParametersInputCreator } from '../../../types/types';
 import ElementCreator from '../elementCreator';
+import { ParametersElementCreator } from '../../../types/types';
 
 export default class InputCreator extends ElementCreator {
-  createElement(parameters: ParametersInputCreator): void {
+  createElement(parameters: ParametersElementCreator): void {
     this.element = document.createElement('div');
     this.setClasses(parameters.tagClasses);
     if (parameters.callback) {

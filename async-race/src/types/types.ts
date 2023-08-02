@@ -3,12 +3,6 @@ export interface ParametersElementCreator {
   tagClasses: string[] | null;
   textContent: string;
   callback: null | CallbackObject;
-}
-export interface ParametersInputCreator {
-  tag: string;
-  tagClasses: string[] | null;
-  textContent: string;
-  callback: null | CallbackObject;
   buttonName?: string;
 }
 
@@ -16,12 +10,8 @@ export type CallbackObject = {
   [key: string]: (event: Event | KeyboardEvent) => void;
 };
 
-type FunctionType = {
-  [key: string]: (event: Event | KeyboardEvent) => void;
-};
-
 export type FunctionObject = {
-  [key: string]: FunctionType;
+  [key: string]: CallbackObject;
 };
 
 export interface PageParameter {
@@ -29,20 +19,14 @@ export interface PageParameter {
   callBack: null | CallbackObject;
 }
 
-export interface DataOneCar {
+export interface Car {
   name: string;
   color: string;
   id: number;
 }
 
-export interface DataGetCars {
-  data: DataOneCar[];
-  countCars: number;
-  maxPage: number;
-}
-
-export interface DataUpdateCar {
-  data: DataOneCar[];
+export interface GarageData {
+  data: Car[] | null;
   countCars: number;
   maxPage: number;
 }
@@ -52,7 +36,7 @@ export type DataDrive = {
   velocity: number;
 };
 
-export type WinnerData = {
+export type Winner = {
   wins: number;
   time: number;
   id: number;
@@ -64,28 +48,11 @@ export interface DataDriveResult {
   time?: string;
 }
 
-export interface GarageViewData {
-  data: DataOneCar[];
-  countCars: number;
-  maxPage: number;
-}
-
-export interface WinnersData {
-  dataWinners: WinnerData[];
+export interface Winners {
+  dataWinners: Winner[];
   countWinners: number;
   maxPage: number;
 }
-
-export interface BodyWinnerData {
-  id: number;
-  wins: number;
-  time: number;
-}
-
-export type BodyRequest = {
-  name: string;
-  color: string;
-};
 
 export interface ParametersResultBlock {
   colorWinner: string,
@@ -94,7 +61,7 @@ export interface ParametersResultBlock {
   timeWinner: number,
 }
 
-export interface ParametersMoving {
+export interface MoveParameters {
   garageBlockId: string | undefined,
   svgElement: SVGSVGElement | undefined | null,
   roadLength: number,

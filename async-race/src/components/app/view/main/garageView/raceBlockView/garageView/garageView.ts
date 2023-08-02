@@ -1,11 +1,11 @@
-import './oneGarage.css';
-import { DataOneCar, ParametersElementCreator } from '../../../../../../../types/types';
+import './garageView.css';
+import { Car, ParametersElementCreator } from '../../../../../../../types/types';
 import View from '../../../../view';
 import { carElementString } from '../../../../../../../data/data';
 import changeFillSize from '../../../../../../functions/changeFill';
 
-export default class OneGarageView extends View {
-  constructor(dataCar: DataOneCar) {
+export default class GarageView extends View {
+  constructor(dataCar: Car) {
     const parameters: ParametersElementCreator = {
       tag: 'div',
       tagClasses: ['race-block__garage', 'block-garage'],
@@ -16,7 +16,7 @@ export default class OneGarageView extends View {
     this.configView(dataCar);
   }
 
-  configView(dataCar: DataOneCar): void {
+  configView(dataCar: Car): void {
     this.addCreatedElement('button', ['block-garage__select-button'], 'Select', this.elementCreator);
     this.addCreatedElement('button', ['block-garage__delete-button'], 'Delete', this.elementCreator);
     this.addCreatedElement('span', ['block-garage__name'], dataCar.name, this.elementCreator);
